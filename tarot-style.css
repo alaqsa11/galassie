@@ -180,7 +180,7 @@ header {
 }
 
 .tarot-card.fan-card:hover {
-  z-index: 200;
+  z-index: 9999 !important;
 }
 
 .tarot-card.fan-card .card-face {
@@ -189,7 +189,7 @@ header {
 }
 
 .fan-card.revealed {
-  z-index: 300 !important;
+  z-index: 10000 !important;
   filter: drop-shadow(0 0 30px rgba(250, 204, 21, 0.7));
 }
 

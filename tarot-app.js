@@ -416,9 +416,12 @@ function drawFan() {
   const W = container.clientWidth;
   const H = container.clientHeight;
   const cx = W / 2;
-  const cy = H * 0.7;
-  const R = Math.max(160, Math.min(H * 0.62, W * 0.5));
-  const arcDeg = 140;
+  const cy = H * (0.6 + Math.random() * 0.2);
+  const R = Math.max(160, Math.min(H * (0.55 + Math.random() * 0.2), W * (0.5 + Math.random() * 0.12)));
+  const arcDeg = 110 + Math.random() * 60;
+
+  container.dataset.pivotX = cx;
+  container.dataset.pivotY = cy;
 
   const cards = shuffleDeck(getAllCards());
   const N = cards.length;
@@ -427,18 +430,23 @@ function drawFan() {
     const card = buildFanCard(cardData);
     container.appendChild(card);
 
-    const theta = (-arcDeg / 2 + (arcDeg * i) / (N - 1)) * (Math.PI / 180);
-    const x = cx + R * Math.sin(theta);
-    const y = cy - R * Math.cos(theta);
+    const t = i / (N - 1);
+    const baseAngle = (-arcDeg / 2 + arcDeg * t) * (Math.PI / 180);
+    const jitter = (Math.random() - 0.5) * 12 * (Math.PI / 180);
+    const angle = baseAngle + jitter;
+    const rad = R * (0.85 + Math.random() * 0.35);
+    const x = cx + rad * Math.sin(angle);
+    const y = cy - rad * Math.cos(angle);
+    const rotateDeg = angle * (180 / Math.PI) + (Math.random() - 0.5) * 16;
 
     card.style.left = (x - card.offsetWidth / 2) + 'px';
     card.style.top = (y - card.offsetHeight / 2) + 'px';
-    card.style.transform = `rotate(${theta * (180 / Math.PI)}deg)`;
-    card.style.zIndex = i + 1;
+    card.style.transform = `rotate(${rotateDeg}deg)`;
+    card.style.zIndex = Math.floor(Math.random() * 500) + 1;
 
     card.dataset.x = x;
     card.dataset.y = y;
-    card.dataset.theta = theta * (180 / Math.PI);
+    card.dataset.theta = rotateDeg;
 
     card.addEventListener('click', () => revealFanCard(card, cardData));
   });
@@ -452,8 +460,8 @@ function revealFanCard(card, cardData) {
 
   const W = container.clientWidth;
   const H = container.clientHeight;
-  const cx = W / 2;
-  const cy = H * 0.7;
+  const cx = parseFloat(container.dataset.pivotX) || W / 2;
+  const cy = parseFloat(container.dataset.pivotY) || H / 2;
   const thetaDeg = parseFloat(card.dataset.theta) || 0;
 
   card.classList.add('revealed');
