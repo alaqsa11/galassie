@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flight Simulator - Boeing 737</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',sans-serif;color:#fff}
+canvas#gameCanvas{display:block}
+#hud{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+
+#cockpit-panel{position:absolute;bottom:0;left:0;width:100%;height:220px;
+  background:linear-gradient(180deg,rgba(20,20,25,0.0) 0%,rgba(20,20,25,0.95) 15%,rgba(30,30,35,1) 100%);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;gap:6px}
+
+.gauge{width:110px;height:110px;border-radius:50%;position:relative;
+  background:radial-gradient(circle,#1a1a1a 60%,#111 80%,#222 95%,#0a0a0a 100%);
+  border:3px solid #444;box-shadow:0 0 8px rgba(0,0,0,0.8),inset 0 0 15px rgba(0,0,0,0.5)}
+.gauge canvas{width:100%;height:100%;border-radius:50%}
+.gauge-label{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:7px;
+  color:#aaa;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.gauge-value{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:13px;
+  font-weight:bold;color:#fff}
+
+.gauge-wide{width:180px;height:90px;border-radius:6px;
+  background:linear-gradient(180deg,#1a1a1a,#111);border:2px solid #444;
+  box-shadow:0 0 8px rgba(0,0,0,0.8),inset 0 0 10px rgba(0,0,0,0.5)}
+.gauge-wide canvas{width:100%;height:100%;border-radius:6px}
+
+#status-panel{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:15px;padding:8px 20px;background:rgba(0,0,0,0.6);
+  border:1px solid rgba(0,255,0,0.3);border-radius:6px;backdrop-filter:blur(5px)}
+.status-item{text-align:center}
+.status-item .lbl{font-size:8px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.status-item .val{font-size:16px;font-weight:bold;font-family:'Courier New',monospace}
+.status-item .val.green{color:#0f0}
+.status-item .val.cyan{color:#0ff}
+.status-item .val.orange{color:#f90}
+.status-item .val.red{color:#f33}
+.status-item .val.yellow{color:#ff0}
+.status-item .unit{font-size:8px;color:#666}
+
+# annunciator-panel{position:absolute;top:60px;left:10px;display:flex;flex-direction:column;gap:4px}
+.annunciator{padding:3px 8px;font-size:9px;font-weight:bold;border-radius:3px;display:none;
+  text-transform:uppercase;letter-spacing:1px}
+.annunciator.active{display:block;animation:annBlink 0.5s infinite}
+@keyframes annBlink{50%{opacity:0.3}}
+#ann-stall{background:#f00;color:#fff}
+#ann-overspeed{background:#ff0;color:#000}
+#ann-gs{background:#0ff;color:#000}
+#ann-ap{background:#0a0;color:#fff}
+#ann-gear{background:#f90;color:#000}
+#ann-flaps{background:#09f;color:#fff}
+
+#mission-panel{position:absolute;top:10px;right:10px;padding:10px 14px;
+  background:rgba(0,0,0,0.6);border:1px solid rgba(0,255,0,0.3);border-radius:6px;
+  font-size:11px;max-width:220px;backdrop-filter:blur(5px)}
+#mission-panel h3{color:#0ff;font-size:12px;margin-bottom:4px}
+#mission-panel p{color:#ccc;line-height:1.4}
+#mission-panel .waypoint{color:#ff0;font-weight:bold}
+
+#minimap{position:absolute;top:10px;left:10px;width:140px;height:140px;
+  border:2px solid rgba(0,255,0,0.4);background:rgba(0,10,0,0.8);border-radius:6px;overflow:hidden}
+#minimap canvas{width:100%;height:100%}
+
+#controls-help{position:absolute;bottom:235px;left:10px;padding:8px 12px;
+  border:1px solid rgba(0,255,0,0.2);background:rgba(0,0,0,0.5);border-radius:5px;
+  font-size:9px;color:#888;line-height:1.5;backdrop-filter:blur(3px)}
+#controls-help b{color:#0f0}
+
+#warnings{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+#warnings div{display:none;font-size:32px;font-weight:bold;text-shadow:0 0 20px currentColor;
+  animation:warnBlink 0.4s infinite}
+@keyframes warnBlink{50%{opacity:0.2}}
+#warn-pullup{color:#f00;font-size:36px}
+#warn-stall{color:#f00}
+#warn-terrain{color:#f90}
+#warn-overspeed{color:#ff0}
+
+#game-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:100;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(5px)}
+#game-overlay .content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:all}
+#game-overlay h1{font-size:42px;margin-bottom:15px}
+#game-overlay p{font-size:14px;color:#aaa;margin-bottom:8px}
+#game-overlay button{padding:12px 35px;font-size:16px;background:#0f0;color:#000;
+  border:none;border-radius:6px;cursor:pointer;font-weight:bold;margin-top:15px}
+#game-overlay button:hover{background:#0ff}
+
+#start-screen{position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;
+  background:linear-gradient(135deg,#0a0a1e 0%,#12122e 50%,#0a0a1e 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center}
+#start-screen .title{font-size:42px;color:#0ff;text-shadow:0 0 30px rgba(0,255,255,0.4);
+  font-weight:300;letter-spacing:8px;margin-bottom:5px}
+#start-screen .subtitle{font-size:14px;color:#0f0;margin-bottom:30px;letter-spacing:3px}
+#start-screen .plane-art{font-size:70px;margin-bottom:20px;opacity:0.8}
+.mission-select{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.mission-btn{padding:12px 20px;background:rgba(0,255,0,0.05);color:#0f0;
+  border:1px solid rgba(0,255,0,0.3);border-radius:6px;cursor:pointer;
+  font-family:'Courier New',monospace;text-align:left;transition:all 0.3s}
+.mission-btn:hover{background:rgba(0,255,0,0.15);border-color:#0ff}
+.mission-btn.selected{background:rgba(0,255,0,0.2);border-color:#0ff;box-shadow:0 0 15px rgba(0,255,255,0.2)}
+.mission-btn h3{font-size:12px;color:#0ff;margin-bottom:2px}
+.mission-btn p{font-size:9px;color:#888}
+#start-screen #start-btn{padding:14px 50px;font-size:18px;background:#0f0;color:#000;
+  border:none;border-radius:6px;cursor:pointer;font-weight:bold;letter-spacing:2px}
+#start-screen #start-btn:hover{background:#0ff}
+
+#crash-flash{position:absolute;top:0;left:0;width:100%;height:100%;
+  background:rgba(255,0,0,0);pointer-events:none;transition:background 0.1s}
+
+#pause-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.7);display:none;z-index:90;
+  align-items:center;justify-content:center;pointer-events:all}
+#pause-overlay h2{font-size:36px;color:#0ff;letter-spacing:5px}
+#pause-overlay p{color:#aaa;margin-top:10px;text-align:center}
+
+#view-label{position:absolute;top:50px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:#666;letter-spacing:2px;text-transform:uppercase}
+
+#fuel-gauge{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  width:20px;height:200px;background:#111;border:1px solid #444;border-radius:10px;overflow:hidden}
+#fuel-bar{position:absolute;bottom:0;width:100%;background:linear-gradient(0deg,#0a0,#0f0);
+  transition:height 0.5s;border-radius:0 0 9px 9px}
+#fuel-label{position:absolute;right:35px;top:50%;transform:translateY(-50%);
+  font-size:8px;color:#888;writing-mode:vertical-rl;text-orientation:mixed}
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+  <div class="plane-art">✈</div>
+  <div class="title">FLIGHT SIMULATOR</div>
+  <div class="subtitle">BOEING 737-800</div>
+  <div class="mission-select">
+    <button class="mission-btn selected" onclick="selectMission(0)">
+      <h3>MISSA 1 — Decollo e Atterraggio circuito</h3>
+      <p>Decolla, vola un circuito di pattern e atterra sulla stessa pista.</p>
+    </button>
+    <button class="mission-btn" onclick="selectMission(1)">
+      <h3>MISSA 2 — Volo IFR con waypoint</h3>
+      <p>Segui 4 waypoints con navigazione e atterra alla destinazione.</p>
+    </button>
+    <button class="mission-btn" onclick="selectMission(2)">
+      <h3>MISSA 3 — Volo Libero</h3>
+      <p>Nessun obiettivo. Esplora e impara a volare.</p>
+    </button>
+  </div>
+  <button id="start-btn" onclick="startGame()">Avvia Simulazione</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="hud">
+  <div id="status-panel">
+    <div class="status-item"><div class="lbl">Altitude</div><div class="val cyan" id="s-alt">0</div><div class="unit">FT</div></div>
+    <div class="status-item"><div class="lbl">Airspeed</div><div class="val orange" id="s-spd">0</div><div class="unit">KTS</div></div>
+    <div class="status-item"><div class="lbl">Heading</div><div class="val green" id="s-hdg">000</div><div class="unit">DEG</div></div>
+    <div class="status-item"><div class="lbl">V/S</div><div class="val yellow" id="s-vsi">0</div><div class="unit">FT/MIN</div></div>
+    <div class="status-item"><div class="lbl">G-Force</div><div class="val green" id="s-g">1.0</div><div class="unit">G</div></div>
+    <div class="status-item"><div class="lbl">AoA</div><div class="val green" id="s-aoa">0.0</div><div class="unit">DEG</div></div>
+    <div class="status-item"><div class="lbl">Flaps</div><div class="val cyan" id="s-flaps">UP</div><div class="unit">CONF</div></div>
+    <div class="status-item"><div class="lbl">Gear</div><div class="val green" id="s-gear">DOWN</div><div class="unit">STATUS</div></div>
+    <div class="status-item"><div class="lbl">Brake</div><div class="val green" id="s-brake">OFF</div><div class="unit"></div></div>
+  </div>
+
+  <div id="annunciator-panel">
+    <div class="annunciator" id="ann-stall">STALL</div>
+    <div class="annunciator" id="ann-overspeed">OVERSPEED</div>
+    <div class="annunciator" id="ann-gs">GLIDESLOPE</div>
+    <div class="annunciator" id="ann-gear">GEAR UP</div>
+    <div class="annunciator" id="ann-flaps">FLAPS 15</div>
+  </div>
+
+  <div id="mission-panel"><h3>MISSIONE</h3><p id="mission-text">...</p></div>
+
+  <div id="minimap"><canvas id="minimapCanvas" width="140" height="140"></canvas></div>
+
+  <div id="fuel-label">FUEL</div>
+  <div id="fuel-gauge"><div id="fuel-bar" style="height:100%"></div></div>
+
+  <div id="warnings">
+    <div id="warn-pullup">PULL UP</div>
+    <div id="warn-stall">STALL</div>
+    <div id="warn-terrain">TERRAIN</div>
+    <div id="warn-overspeed">OVERSPEED</div>
+  </div>
+
+  <div id="view-label">COCKPIT VIEW</div>
+
+  <div id="controls-help">
+    <b>CONTROLLI:</b><br>
+    W/S — Muso giu/su (pitch)<br>
+    A/D — Rollio sin/dex<br>
+    Q/E — Timone sin/dex<br>
+    Shift/Ctrl — Throttle +/-<br>
+    F — Flap toggle (0-1-2-3-FULL)<br>
+    G — Carrello up/down<br>
+    B — Freno a terra<br>
+    V — Cambia vista<br>
+    P — Pausa<br>
+    R — Reset missione
+  </div>
+
+  <div id="crash-flash"></div>
+  <div id="pause-overlay"><h2>PAUSA</h2><p>Premi P per continuare</p></div>
+  <div id="game-overlay"><div class="content"><h1 id="overlay-title"></h1><p id="overlay-msg"></p><p id="overlay-detail"></p><button onclick="restartGame()">Riavvia</button></div></div>
+
+  <div id="cockpit-panel">
+    <div class="gauge"><canvas id="gauge-airspeed" width="220" height="220"></canvas><div class="gauge-label">Airspeed</div><div class="gauge-value" id="gv-spd">0</div></div>
+    <div class="gauge"><canvas id="gauge-attitude" width="220" height="220"></canvas><div class="gauge-label">Attitude</div></div>
+    <div class="gauge"><canvas id="gauge-altimeter" width="220" height="220"></canvas><div class="gauge-label">Altimeter</div><div class="gauge-value" id="gv-alt">0</div></div>
+    <div class="gauge-wide"><canvas id="gauge-vsi" width="360" height="180"></canvas><div class="gauge-label" style="bottom:6px">Vert Speed</div><div class="gauge-value" style="bottom:20px" id="gv-vsi">0</div></div>
+    <div class="gauge"><canvas id="gauge-hdg" width="220" height="220"></canvas><div class="gauge-label">Heading</div><div class="gauge-value" id="gv-hdg">000</div></div>
+    <div class="gauge"><canvas id="gauge-throttle" width="220" height="220"></canvas><div class="gauge-label">Throttle</div><div class="gauge-value" id="gv-thr">0%</div></div>
+    <div class="gauge-wide"><canvas id="gauge-aoa" width="360" height="180"></canvas><div class="gauge-label" style="bottom:6px">Angle of Attack</div><div class="gauge-value" style="bottom:20px" id="gv-aoa">0.0</div></div>
+  </div>
+</div>
+
+<script>
+// ===== CANVAS =====
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const mmCanvas = document.getElementById('minimapCanvas');
+const mmCtx = mmCanvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ===== MISSIONS =====
+let currentMission = 0;
+const missions = [
+  { name: 'Circuito', waypoints: null, hasLanding: true },
+  { name: 'IFR', waypoints: [{x:1500,z:-2500},{x:3500,z:-5000},{x:1000,z:-8000},{x:-2000,z:-6000}], hasLanding: true },
+  { name: 'Libero', waypoints: null, hasLanding: false }
+];
+
+function selectMission(i) {
+  currentMission = i;
+  document.querySelectorAll('.mission-btn').forEach((b,j) => b.classList.toggle('selected', j===i));
+}
+
+// ===== GAME STATE =====
+let gameRunning = false, gameOver = false, paused = false, viewMode = 0;
+let lastTime = 0, waypointIdx = 0, missionPhase = 'takeoff';
+let simTime = 0;
+
+// Boeing 737-800 approximate parameters
+const AC = {
+  mass: 79010,           // kg (empty weight)
+  maxFuel: 25816,        // kg
+  fuelBurn: 2.5,         // kg/s at max thrust
+  wingArea: 124.6,       // m2
+  wingSpan: 35.8,        // m
+  maxThrust: 118000 * 2, // N (2x CFM56)
+  dragCoeff0: 0.022,     // parasitic drag
+  dragK: 0.045,          // induced drag factor
+  clMax: 2.2,            // max lift coeff (flaps full)
+  clClean: 1.4,          // max clean
+  stallSpeedKts: 130,    // clean
+  stallSpeedFlaps: 105,  // full flaps
+  maxSpeedKts: 340,      // Vne
+  rollRate: 1.8,         // rad/s max
+  pitchRate: 0.8,        // rad/s max
+  yawRate: 0.4,          // rad/s max
+  pitchStability: 0.15,  // pitch damping
+  rollStability: 0.5,    // roll damping
+};
+
+let fuel = AC.maxFuel;
+
+const plane = {
+  x: 0, y: 0, z: 200,
+  vx: 0, vy: 0, vz: 0,
+  pitch: 0, roll: 0, yaw: 0,
+  pitchVel: 0, rollVel: 0, yawVel: 0,
+  speed: 0, altitude: 0,
+  throttle: 0, targetThrottle: 0,
+  onGround: true,
+  gear: true,       // true = down
+  flaps: 0,         // 0,1,2,3,4 (0=up, 4=full)
+  spoilers: 0,      // 0-1
+  brake: false,
+  gForce: 1,
+  aoa: 0,
+  groundEffect: 0,
+  engineSpoolRate: 0.4, // %/s throttle change
+};
+
+const flapAngles = [0, 5, 15, 30, 40]; // degrees
+const flapSpeeds = [250, 230, 210, 180, 170]; // max kts per config
+const stallAngles = [16, 18, 20, 22, 24]; // AoA stall degrees per flap
+
+const keys = {};
+
+// ===== WORLD =====
+const RUNWAY_LENGTH = 2500;
+const RUNWAY_WIDTH = 45;
+const GRAVITY = 9.81;
+const AIR_DENSITY = 1.225;
+
+const buildings = [];
+for (let i = 0; i < 50; i++) {
+  const side = Math.random() > 0.5 ? 1 : -1;
+  buildings.push({
+    x: side * (200 + Math.random() * 4000),
+    z: -Math.random() * 10000 - 500,
+    w: 30 + Math.random() * 100,
+    h: 30 + Math.random() * 250,
+    d: 30 + Math.random() * 100,
+    color: `hsl(${200+Math.random()*40},${15+Math.random()*15}%,${18+Math.random()*15}%)`
+  });
+}
+
+const trees = [];
+for (let i = 0; i < 400; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 300 + Math.random() * 8000;
+  trees.push({
+    x: Math.sin(angle) * dist,
+    z: -Math.cos(angle) * dist,
+    size: 4 + Math.random() * 12,
+    hue: 90 + Math.random() * 40
+  });
+}
+
+// ===== CLOUDS =====
+const clouds = [];
+for (let i = 0; i < 20; i++) {
+  clouds.push({
+    x: (Math.random()-0.5) * 15000,
+    y: 800 + Math.random() * 2000,
+    z: -Math.random() * 15000,
+    size: 200 + Math.random() * 400,
+    opacity: 0.15 + Math.random() * 0.2
+  });
+}
+
+// Wind
+const wind = { x: 2 + Math.random()*5, z: -1 + Math.random()*3, gust: 0 };
+let turbulenceTimer = 0;
+
+// ===== INPUT =====
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  keys[k] = true;
+  if (k === ' ') e.preventDefault();
+
+  if (k === 'f' && gameRunning && !gameOver) {
+    plane.flaps = (plane.flaps + 1) % 5;
+  }
+  if (k === 'g' && gameRunning && !gameOver) {
+    plane.gear = !plane.gear;
+  }
+  if (k === 'v' && gameRunning) {
+    viewMode = (viewMode + 1) % 3;
+    document.getElementById('view-label').textContent =
+      ['COCKPIT VIEW', 'CHASE VIEW', 'TOP VIEW'][viewMode];
+  }
+  if (k === 'p' && gameRunning) {
+    paused = !paused;
+    document.getElementById('pause-overlay').style.display = paused ? 'flex' : 'none';
+    if (!paused) { lastTime = performance.now(); requestAnimationFrame(gameLoop); }
+  }
+  if (k === 'r') restartGame();
+});
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+// ===== FLIGHT PHYSICS =====
+function updatePhysics(dt) {
+  if (gameOver || paused) return;
+
+  simTime += dt;
+
+  // Turbulence
+  turbulenceTimer -= dt;
+  if (turbulenceTimer <= 0) {
+    wind.gust = (Math.random() - 0.5) * 3;
+    turbulenceTimer = 2 + Math.random() * 5;
+  }
+
+  // Engine spool
+  const thrDiff = plane.targetThrottle - plane.throttle;
+  plane.throttle += Math.sign(thrDiff) * Math.min(Math.abs(thrDiff), AC.engineSpoolRate * dt);
+  plane.throttle = Math.max(0, Math.min(1, plane.throttle));
+
+  // Throttle input
+  if (keys['shift'] || keys['+'] || keys['=']) plane.targetThrottle = Math.min(1, plane.targetThrottle + dt * 0.3);
+  if (keys['control'] || keys['-'] || keys['_']) plane.targetThrottle = Math.max(0, plane.targetThrottle - dt * 0.3);
+  if (keys[' ']) plane.targetThrottle = Math.min(1, plane.targetThrottle + dt * 1.5);
+
+  // Fuel consumption
+  if (plane.throttle > 0.05) {
+    fuel = Math.max(0, fuel - AC.fuelBurn * plane.throttle * dt);
+  }
+  const currentMass = AC.mass + fuel;
+
+  // Brake
+  plane.brake = keys['b'] && plane.onGround;
+
+  // Control inputs (proportional to airspeed for realism)
+  const controlAuth = Math.min(1, plane.speed / 80);
+  const inputPitch = ((keys['w']||keys['arrowdown']?1:0) - (keys['s']||keys['arrowup']?1:0));
+  const inputRoll = ((keys['a']||keys['arrowleft']?1:0) - (keys['d']||keys['arrowright']?1:0));
+  const inputYaw = ((keys['q']?1:0) - (keys['e']?1:0));
+
+  // Control surfaces
+  plane.pitchVel += inputPitch * AC.pitchRate * controlAuth * dt;
+  plane.rollVel += inputRoll * AC.rollRate * controlAuth * dt;
+  plane.yawVel += inputYaw * AC.yawRate * controlAuth * dt;
+
+  // Stability (damping)
+  plane.pitchVel -= plane.pitchVel * AC.pitchStability * dt * 3;
+  plane.rollVel -= plane.rollVel * AC.rollStability * dt * 3;
+  plane.yawVel -= plane.yawVel * 0.8 * dt * 3;
+
+  // Auto-coordination: roll causes yaw
+  plane.yawVel += Math.sin(plane.roll) * 0.5 * controlAuth * dt;
+
+  // Speed-dependent pitch trim (nose drops at low speed)
+  if (plane.speed < 100 && !plane.onGround) {
+    plane.pitchVel += 0.3 * (1 - plane.speed/100) * dt;
+  }
+
+  // Update angles
+  plane.pitch += plane.pitchVel * dt;
+  plane.roll += plane.rollVel * dt;
+  plane.yaw += plane.yawVel * dt;
+
+  // Clamp
+  plane.pitch = Math.max(-Math.PI/3, Math.min(Math.PI/3, plane.pitch));
+
+  // AoA
+  plane.aoa = plane.pitch;
+
+  // Flap speed limits
+  const maxFlapSpd = flapSpeeds[plane.flaps];
+  if (plane.speed > maxFlapSpd && plane.flaps > 0) {
+    // structural warning, auto retract if exceeded badly
+    if (plane.speed > maxFlapSpd + 20) {
+      plane.flaps = Math.max(0, plane.flaps - 1);
+    }
+  }
+
+  // Lift coefficient based on AoA and flaps
+  const clMax = plane.flaps > 0 ? AC.clMax : AC.clClean;
+  const stallAngle = (stallAngles[plane.flaps] || 16) * Math.PI / 180;
+  const stallSpeed = plane.flaps > 0 ? AC.stallSpeedFlaps : AC.stallSpeedKts;
+  const isStalling = (plane.speed < stallSpeed + 10) && !plane.onGround;
+
+  let cl;
+  const aoaDeg = plane.aoa * 180 / Math.PI;
+  if (Math.abs(plane.aoa) < stallAngle) {
+    cl = clMax * (plane.aoa / stallAngle);
+  } else {
+    // Post-stall: lift drops
+    cl = clMax * Math.sign(plane.aoa) * 0.3 * (1 - (Math.abs(plane.aoa) - stallAngle) / (Math.PI/4));
+  }
+
+  // Ground effect
+  const altAGL = Math.max(0, plane.altitude * 0.3048);
+  plane.groundEffect = altAGL < AC.wingSpan ? (1 + 0.3 * (1 - altAGL / AC.wingSpan)) : 1;
+
+  const speedMs = plane.speed * 0.5144;
+  const q = 0.5 * AIR_DENSITY * speedMs * speedMs;
+
+  const lift = q * AC.wingArea * cl * plane.groundEffect;
+
+  // Flap drag increment
+  const flapDrag = plane.flaps * 0.006;
+  const gearDrag = plane.gear ? 0.008 : 0;
+  const cd = AC.dragCoeff0 + flapDrag + gearDrag + (cl * cl * AC.dragK);
+  const drag = q * AC.wingArea * cd;
+
+  // Thrust (decreases with altitude)
+  const altFactor = Math.max(0.3, 1 - altAGL / 12000);
+  const thrust = plane.throttle * AC.maxThrust * altFactor;
+
+  // Forces along body axes
+  const thrustComp = thrust * Math.cos(plane.pitch);
+  const liftComp = lift;
+  const gravityComp = currentMass * GRAVITY;
+
+  // Vertical: lift opposes gravity, pitch affects thrust component
+  const verticalForce = liftComp - gravityComp + thrust * Math.sin(plane.pitch);
+  plane.vy += (verticalForce / currentMass) * dt;
+
+  // G-force
+  plane.gForce = 1 + (plane.vy / GRAVITY);
+
+  // Horizontal speed from thrust and drag
+  const accelH = (thrustComp - drag) / currentMass;
+  const newSpeedMs = speedMs + accelH * dt;
+
+  // Wind
+  const windEffect = wind.x * 0.01;
+
+  plane.speed = Math.max(0, newSpeedMs / 0.5144 + windEffect * 10);
+
+  // Position
+  const hdgRad = plane.yaw;
+  const horizontalSpeed = newSpeedMs;
+  plane.vx = horizontalSpeed * Math.sin(hdgRad);
+  plane.vz = -horizontalSpeed * Math.cos(hdgRad);
+
+  plane.x += plane.vx * dt;
+  plane.z += plane.vz * dt;
+
+  // Altitude (feet)
+  plane.altitude += plane.vy * dt * 3.281;
+
+  // Ground handling
+  if (plane.onGround) {
+    plane.altitude = 0;
+    plane.vy = 0;
+    plane.pitch = plane.pitch * 0.9; // ground damping
+    plane.roll = plane.roll * 0.8;
+
+    // Nose wheel steering on ground
+    if (plane.speed > 20) {
+      plane.yaw += inputYaw * 0.3 * dt;
+      plane.yaw += inputRoll * 0.15 * dt; // differential braking effect
+    }
+
+    // Brake deceleration
+    if (plane.brake && plane.speed > 0) {
+      const brakeForce = plane.speed > 80 ? 3 : 8;
+      plane.speed = Math.max(0, plane.speed - brakeForce * dt * 10);
+    }
+
+    // Rolling friction
+    plane.speed = Math.max(0, plane.speed - 0.5 * dt * 10);
+
+    // Takeoff rotation
+    if (plane.speed > 130 && inputPitch < 0) {
+      plane.onGround = false;
+      missionPhase = 'climb';
+    }
+    // Auto rotation at Vr
+    if (plane.speed > 155 && plane.flaps >= 2) {
+      plane.onGround = false;
+      plane.vy = 3;
+      missionPhase = 'climb';
+    }
+  }
+
+  // Landing
+  if (plane.altitude <= 0 && !plane.onGround) {
+    const vsFpm = plane.vy * 196.85;
+    const sinkOk = vsFpm > -600;
+    const speedOk = plane.speed > 100 && plane.speed < 170;
+    const gearOk = plane.gear;
+    const onRunway = Math.abs(plane.x) < RUNWAY_WIDTH/2 + 30 && plane.z > -RUNWAY_LENGTH - 100 && plane.z < 300;
+
+    if (!sinkOk && Math.abs(vsFpm) > 800) {
+      crash('Impatto troppo forte: ' + Math.round(Math.abs(vsFpm)) + ' ft/min');
+      return;
+    }
+    if (!gearOk) {
+      crash('Atterraggio senza carrello!');
+      return;
+    }
+    if (!onRunway && plane.altitude * 0.3048 < 2) {
+      if (plane.speed > 30) {
+        crash('Fuori pista');
+        return;
+      }
+    }
+    plane.altitude = 0;
+    plane.vy = 0;
+    plane.onGround = true;
+    plane.pitch = Math.max(0, plane.pitch);
+
+    // Spoilers auto deploy on landing
+    if (plane.flaps > 0) plane.spoilers = 1;
+  }
+
+  // Stall warning
+  const stallWarn = plane.speed < stallSpeed && !plane.onGround;
+  document.getElementById('warn-stall').style.display = stallWarn && plane.speed < stallSpeed ? 'block' : 'none';
+  document.getElementById('ann-stall').className = 'annunciator' + (stallWarn ? ' active' : '');
+
+  // Overspeed
+  const overSpd = plane.speed > AC.maxSpeedKts;
+  document.getElementById('warn-overspeed').style.display = overSpd ? 'block' : 'none';
+  document.getElementById('ann-overspeed').className = 'annunciator' + (overSpd ? ' active' : '');
+
+  // Terrain warning (low altitude + descent)
+  const terrainWarn = plane.altitude < 500 && plane.vy < -5 && !plane.onGround;
+  document.getElementById('warn-terrain').style.display = terrainWarn ? 'block' : 'none';
+
+  // Pull up
+  const pullUpWarn = plane.altitude < 200 && plane.vy < -8 && !plane.onGround;
+  document.getElementById('warn-pullup').style.display = pullUpWarn ? 'block' : 'none';
+
+  // Gear annunciator
+  document.getElementById('ann-gear').className = 'annunciator' + (plane.gear && plane.altitude > 1000 ? ' active' : '');
+  document.getElementById('ann-gear').textContent = 'GEAR DOWN';
+  document.getElementById('ann-flaps').textContent = plane.flaps > 0 ? 'FLAPS ' + (plane.flaps < 4 ? plane.flaps : 'FULL') : '';
+  document.getElementById('ann-flaps').className = 'annunciator' + (plane.flaps > 0 && plane.speed < 200 ? ' active' : '');
+
+  // Building collision
+  for (const b of buildings) {
+    const dx = plane.x - b.x;
+    const dz = plane.z - b.z;
+    if (Math.abs(dx) < b.w/2 + 8 && Math.abs(dz) < b.d/2 + 8 && altAGL < b.h + 2) {
+      crash('Collisione con edificio');
+      return;
+    }
+  }
+
+  // World bounds
+  if (Math.abs(plane.x) > 12000 || Math.abs(plane.z) > 15000) {
+    crash('Uscita area operativa');
+    return;
+  }
+
+  // Out of fuel
+  if (fuel <= 0 && plane.throttle > 0) {
+    plane.targetThrottle = 0;
+    plane.throttle = Math.max(0, plane.throttle - dt * 0.1);
+  }
+
+  updateMission();
+}
+
+// ===== MISSION LOGIC =====
+function updateMission() {
+  const mt = document.getElementById('mission-text');
+  const m = missions[currentMission];
+
+  if (currentMission === 0) {
+    if (missionPhase === 'takeoff') {
+      mt.innerHTML = 'Taxi e decollo dalla pista 09.<br>Accelera a <span class="waypoint">155 kts</span> e ruota.';
+    } else if (missionPhase === 'climb') {
+      if (plane.altitude > 1500) {
+        missionPhase = 'pattern';
+        mt.innerHTML = 'Entra nel circuito di pattern.<br>Mantieni quota <span class="waypoint">1500 ft</span>.';
+      } else {
+        mt.innerHTML = 'Climb a <span class="waypoint">1500 ft</span>. Quota: <span class="waypoint">' + Math.round(plane.altitude) + ' ft</span>';
+      }
+    } else if (missionPhase === 'pattern') {
+      const hdg = ((plane.yaw * 180 / Math.PI) % 360 + 360) % 360;
+      if (hdg > 170 && hdg < 200 && plane.altitude < 1200) {
+        missionPhase = 'approach';
+        mt.innerHTML = 'Final approach! Carrello giu, flap 3.<br>Allinea con la pista.';
+      } else {
+        mt.innerHTML = 'Circuito: vola dritto, poi gira a sinistra.<br>Heading: <span class="waypoint">' + Math.round(hdg) + '</span>';
+      }
+    } else if (missionPhase === 'approach') {
+      if (plane.onGround && plane.speed < 40) {
+        missionPhase = 'landed';
+        mt.innerHTML = '<span class="waypoint">MISSIONE COMPLETATA!</span><br>Atterraggio perfetto!';
+        missionComplete();
+      } else {
+        mt.innerHTML = 'Mantieni approccio. Velocit: <span class="waypoint">' + Math.round(plane.speed) + ' kts</span><br>Quota: <span class="waypoint">' + Math.round(plane.altitude) + ' ft</span>';
+      }
+    } else {
+      mt.innerHTML = 'Fermati sulla pista.';
+    }
+  } else if (currentMission === 1) {
+    const wp = m.waypoints[waypointIdx];
+    if (!wp) { missionComplete(); return; }
+    const dist = Math.sqrt((plane.x-wp.x)**2 + (plane.z-wp.z)**2);
+    const bearing = ((Math.atan2(wp.x-plane.x, -(wp.z-plane.z))*180/Math.PI)+360)%360;
+
+    if (dist < 400) {
+      waypointIdx++;
+      if (waypointIdx >= m.waypoints.length) {
+        mt.innerHTML = 'Ultimo waypoint raggiunto! Prepara atterraggio.';
+        missionPhase = 'approach';
+      } else {
+        mt.innerHTML = '<span class="waypoint">Waypoint ' + waypointIdx + ' raggiunto!</span><br>Prossimo: bearing ' + Math.round(bearing) + ' / ' + Math.round(dist) + 'm';
+      }
+    } else {
+      mt.innerHTML = 'Waypoint <span class="waypoint">' + (waypointIdx+1) + '/' + m.waypoints.length + '</span><br>Bearing: <span class="waypoint">' + Math.round(bearing) + '</span><br>Distanza: <span class="waypoint">' + Math.round(dist) + ' m</span>';
+    }
+    if (missionPhase === 'approach' && plane.onGround && plane.speed < 40) {
+      missionComplete();
+    }
+  } else {
+    mt.innerHTML = 'Volo libero.<br>Speed: ' + Math.round(plane.speed) + ' kts<br>Alt: ' + Math.round(plane.altitude) + ' ft';
+  }
+}
+
+function missionComplete() {
+  gameOver = true;
+  const o = document.getElementById('game-overlay');
+  o.style.display = 'block';
+  document.getElementById('overlay-title').textContent = 'MISSIONE COMPLETATA';
+  document.getElementById('overlay-title').style.color = '#0f0';
+  document.getElementById('overlay-msg').textContent = 'Hai completato la missione con successo!';
+  document.getElementById('overlay-detail').textContent = 'Tempo: ' + Math.round(simTime) + 's | Fuel rimasto: ' + Math.round(fuel) + ' kg';
+}
+
+function crash(reason) {
+  gameOver = true;
+  const o = document.getElementById('game-overlay');
+  o.style.display = 'block';
+  document.getElementById('overlay-title').textContent = 'CRASH';
+  document.getElementById('overlay-title').style.color = '#f00';
+  document.getElementById('overlay-msg').textContent = reason;
+  document.getElementById('overlay-detail').textContent = '';
+  document.getElementById('crash-flash').style.background = 'rgba(255,0,0,0.5)';
+  setTimeout(() => document.getElementById('crash-flash').style.background = 'rgba(255,0,0,0)', 300);
+}
+
+// ===== RENDERING =====
+function project(wx, wy, wz, eyeX, eyeY, eyeZ, yawSin, yawCos, rollAngle, fov, W, H) {
+  let dx = wx - eyeX;
+  let dy = wy - eyeY;
+  let dz = wz - eyeZ;
+  const rx = dx * yawCos + dz * yawSin;
+  const ry = dy;
+  const rz = -dx * yawSin + dz * yawCos;
+  if (rz < 2) return null;
+  const sx = W/2 + (rx / rz) * fov;
+  const sy = H/2 - (ry / rz) * fov;
+  const cx = W/2, cy = H/2;
+  const cosR = Math.cos(rollAngle);
+  const sinR = Math.sin(rollAngle);
+  const fx = cosR*(sx-cx) - sinR*(sy-cy) + cx;
+  const fy = sinR*(sx-cx) + cosR*(sy-cy) + cy;
+  return { x: fx, y: fy, s: fov / rz, depth: rz };
+}
+
+function render() {
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const camAlt = plane.altitude * 0.3048;
+  const camY = camAlt + 5;
+  const fov = 700;
+
+  const yawSin = Math.sin(plane.yaw);
+  const yawCos = Math.cos(-plane.yaw);
+  const rollAngle = plane.roll;
+  const eyeX = plane.x;
+  const eyeZ = plane.z;
+  const eyeY = camY;
+
+  function proj(wx, wy, wz) {
+    return project(wx, wy, wz, eyeX, eyeY, eyeZ, yawSin, yawCos, rollAngle, fov, W, H);
+  }
+
+  // Sky
+  const skyDark = Math.min(1, camAlt / 15000);
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+  skyGrad.addColorStop(0, `rgb(${5+skyDark*15},${10+skyDark*30},${30+skyDark*80})`);
+  skyGrad.addColorStop(0.5, `rgb(${60+skyDark*60},${120+skyDark*80},${200+skyDark*55})`);
+  skyGrad.addColorStop(1, `rgb(${140+skyDark*60},${180+skyDark*40},${220+skyDark*35})`);
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars at high altitude
+  if (camAlt > 5000) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(0.8, (camAlt-5000)/10000)})`;
+    for (let i = 0; i < 50; i++) {
+      const sx = (i * 137.5 + simTime * 2) % W;
+      const sy = (i * 97.3) % (H * 0.4);
+      ctx.fillRect(sx, sy, 1.5, 1.5);
+    }
+  }
+
+  // Sun
+  const sunX = W * 0.7;
+  const sunY = H * 0.12;
+  const sunG = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 80);
+  sunG.addColorStop(0, 'rgba(255,255,220,1)');
+  sunG.addColorStop(0.15, 'rgba(255,255,180,0.9)');
+  sunG.addColorStop(0.5, 'rgba(255,200,100,0.3)');
+  sunG.addColorStop(1, 'rgba(255,150,0,0)');
+  ctx.fillStyle = sunG;
+  ctx.fillRect(sunX-80, sunY-80, 160, 160);
+
+  // Ground
+  const horizonY = H * 0.42;
+  const groundGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+  const timeOfDay = 0.5;
+  groundGrad.addColorStop(0, `rgb(${60},${100+camAlt*0.005},${50})`);
+  groundGrad.addColorStop(0.3, `rgb(${40},${80},${35})`);
+  groundGrad.addColorStop(1, `rgb(${25},${50},${20})`);
+  ctx.fillStyle = groundGrad;
+  ctx.fillRect(0, horizonY, W, H - horizonY);
+
+  // Grid lines on ground for depth perception
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  for (let gz = 100; gz < 5000; gz += 200) {
+    const p1 = proj(-5000, 0, -gz);
+    const p2 = proj(5000, 0, -gz);
+    if (p1 && p2) {
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = '#3a6a3a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // Runway (asphalt)
+  const rwPts = [
+    proj(-RUNWAY_WIDTH/2, 0.05, 400),
+    proj(RUNWAY_WIDTH/2, 0.05, 400),
+    proj(RUNWAY_WIDTH/2, 0.05, -RUNWAY_LENGTH),
+    proj(-RUNWAY_WIDTH/2, 0.05, -RUNWAY_LENGTH)
+  ].filter(p => p);
+
+  if (rwPts.length === 4) {
+    ctx.beginPath();
+    ctx.moveTo(rwPts[0].x, rwPts[0].y);
+    rwPts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.closePath();
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fill();
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Edge lines
+    for (let side of [-1, 1]) {
+      const l1 = proj(side * RUNWAY_WIDTH/2, 0.1, 400);
+      const l2 = proj(side * RUNWAY_WIDTH/2, 0.1, -RUNWAY_LENGTH);
+      if (l1 && l2) {
+        ctx.beginPath();
+        ctx.moveTo(l1.x, l1.y);
+        ctx.lineTo(l2.x, l2.y);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = Math.max(1, 2 * l1.s);
+        ctx.stroke();
+      }
+    }
+
+    // Center dashes
+    for (let i = 0; i < 25; i++) {
+      const t1 = i / 25;
+      const t2 = (i + 0.4) / 25;
+      const d1 = proj(0, 0.1, 380 - t1 * (RUNWAY_LENGTH + 380));
+      const d2 = proj(0, 0.1, 380 - t2 * (RUNWAY_LENGTH + 380));
+      if (d1 && d2) {
+        ctx.beginPath();
+        ctx.moveTo(d1.x, d1.y);
+        ctx.lineTo(d2.x, d2.y);
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = Math.max(1, 2.5 * d1.s);
+        ctx.stroke();
+      }
+    }
+
+    // Threshold markings
+    for (let side of [-1, 1]) {
+      for (let i = 0; i < 6; i++) {
+        const offset = side * (5 + i * 6);
+        const tp1 = proj(offset, 0.1, 350);
+        const tp2 = proj(offset, 0.1, 410);
+        if (tp1 && tp2) {
+          ctx.beginPath();
+          ctx.moveTo(tp1.x, tp1.y);
+          ctx.lineTo(tp2.x, tp2.y);
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = Math.max(1, 3 * tp1.s);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Touchdown zone markers
+    for (let i = 0; i < 3; i++) {
+      for (let side of [-1, 1]) {
+        const td1 = proj(side * 8, 0.1, -200 - i * 100);
+        const td2 = proj(side * 14, 0.1, -200 - i * 100);
+        if (td1 && td2) {
+          ctx.beginPath();
+          ctx.moveTo(td1.x, td1.y);
+          ctx.lineTo(td2.x, td2.y);
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = Math.max(1, 4 * td1.s);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // PAPI lights (4 lights, left of threshold)
+    for (let i = 0; i < 4; i++) {
+      const lp = proj(-RUNWAY_WIDTH/2 - 12, 1.5, 300 + i * 15);
+      if (lp) {
+        const aboveGlide = plane.altitude > 3000 || (plane.z > -500 && plane.altitude > 500);
+        ctx.fillStyle = aboveGlide ? '#f00' : '#fff';
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(lp.x, lp.y, Math.max(1.5, 3 * lp.s), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // Runway end lights
+    for (let side of [-1, 1]) {
+      const el = proj(side * RUNWAY_WIDTH/2, 0.5, -RUNWAY_LENGTH);
+      if (el) {
+        ctx.fillStyle = '#f00';
+        ctx.shadowColor = '#f00';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(el.x, el.y, Math.max(1.5, 3 * el.s), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // Approach lights
+    for (let i = 0; i < 6; i++) {
+      const alp = proj(0, 0.5, 420 + i * 30);
+      if (alp) {
+        ctx.fillStyle = '#ff0';
+        ctx.shadowColor = '#ff0';
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.arc(alp.x, alp.y, Math.max(1, 2.5 * alp.s), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // Taxiway
+    const twPts = [
+      proj(RUNWAY_WIDTH/2, 0.05, -500),
+      proj(RUNWAY_WIDTH/2 + 60, 0.05, -500),
+      proj(RUNWAY_WIDTH/2 + 60, 0.05, -800),
+      proj(RUNWAY_WIDTH/2, 0.05, -800)
+    ].filter(p => p);
+    if (twPts.length === 4) {
+      ctx.beginPath();
+      ctx.moveTo(twPts[0].x, twPts[0].y);
+      twPts.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.closePath();
+      ctx.fillStyle = '#222';
+      ctx.fill();
+    }
+  }
+
+  // Buildings (sorted by distance)
+  const sortedBuildings = [...buildings].sort((a,b) => {
+    const da = (a.x-eyeX)**2 + (a.z-eyeZ)**2;
+    const db = (b.x-eyeX)**2 + (b.z-eyeZ)**2;
+    return db - da;
+  });
+
+  for (const b of sortedBuildings) {
+    const c = [
+      proj(b.x-b.w/2, 0, b.z-b.d/2),
+      proj(b.x+b.w/2, 0, b.z-b.d/2),
+      proj(b.x+b.w/2, 0, b.z+b.d/2),
+      proj(b.x-b.w/2, 0, b.z+b.d/2),
+      proj(b.x-b.w/2, b.h, b.z-b.d/2),
+      proj(b.x+b.w/2, b.h, b.z-b.d/2),
+      proj(b.x+b.w/2, b.h, b.z+b.d/2),
+      proj(b.x-b.w/2, b.h, b.z+b.d/2)
+    ];
+    if (c.some(p => !p)) continue;
+
+    // Front face
+    ctx.beginPath();
+    ctx.moveTo(c[0].x, c[0].y);
+    ctx.lineTo(c[1].x, c[1].y);
+    ctx.lineTo(c[5].x, c[5].y);
+    ctx.lineTo(c[4].x, c[4].y);
+    ctx.closePath();
+    ctx.fillStyle = b.color;
+    ctx.fill();
+
+    // Side face
+    ctx.beginPath();
+    ctx.moveTo(c[1].x, c[1].y);
+    ctx.lineTo(c[2].x, c[2].y);
+    ctx.lineTo(c[6].x, c[6].y);
+    ctx.lineTo(c[5].x, c[5].y);
+    ctx.closePath();
+    ctx.fillStyle = b.color;
+    ctx.fill();
+
+    // Windows (night-time glow)
+    if (c[0].s > 0.3) {
+      const rows = Math.min(15, Math.floor(b.h / 12));
+      const cols = Math.min(8, Math.floor(b.w / 12));
+      for (let r = 0; r < rows; r++) {
+        for (let cl = 0; cl < cols; cl++) {
+          const wx = b.x - b.w/2 + 6 + cl * (b.w/cols);
+          const wy = 4 + r * (b.h/rows);
+          const wp = wx, wz = b.z - b.d/2 - 0.1;
+          const p1 = proj(wx, wy, wz);
+          const p2 = proj(wx + 5, wy + 7, wz);
+          if (p1 && p2 && Math.random() > 0.4) {
+            ctx.fillStyle = `rgba(255,${200+Math.random()*55},${100+Math.random()*100},0.7)`;
+            ctx.fillRect(p1.x, p1.y, Math.max(1, p2.x-p1.x), Math.max(1, p2.y-p1.y));
+          }
+        }
+      }
+    }
+
+    // Top face
+    ctx.beginPath();
+    ctx.moveTo(c[4].x, c[4].y);
+    ctx.lineTo(c[5].x, c[5].y);
+    ctx.lineTo(c[6].x, c[6].y);
+    ctx.lineTo(c[7].x, c[7].y);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(210,10%,${22+Math.random()*5}%)`;
+    ctx.fill();
+  }
+
+  // Trees
+  for (const t of trees) {
+    const tp = proj(t.x, t.size, t.z);
+    const tb = proj(t.x, 0, t.z);
+    if (tp && tb && tp.s > 0.2) {
+      ctx.fillStyle = `hsl(${t.hue},40%,${20+Math.random()*10}%)`;
+      ctx.beginPath();
+      ctx.moveTo(tp.x, tp.y);
+      const tw = t.size * tp.s * 0.6;
+      ctx.lineTo(tp.x - tw, tb.y);
+      ctx.lineTo(tp.x + tw, tb.y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // Clouds
+  ctx.save();
+  for (const cl of clouds) {
+    const cp = proj(cl.x, cl.y, cl.z);
+    if (cp && cp.depth < 5000) {
+      ctx.globalAlpha = cl.opacity * Math.max(0, 1 - cp.depth / 5000);
+      ctx.fillStyle = '#fff';
+      const s = cl.size * cp.s;
+      for (let j = 0; j < 5; j++) {
+        const ox = (j-2) * s * 0.4;
+        const oy = Math.sin(j*1.3) * s * 0.1;
+        ctx.beginPath();
+        ctx.ellipse(cp.x + ox, cp.y + oy, s * 0.35, s * 0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+
+  // Contrails from engines (if at altitude)
+  if (camAlt > 2000 && !plane.onGround) {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    for (let eng = -1; eng <= 1; eng += 2) {
+      const ex = plane.x - eng * 8 * Math.cos(plane.yaw);
+      const ez = plane.z + eng * 8 * Math.sin(plane.yaw);
+      const p1 = proj(ex, plane.altitude * 0.3048 - 2, ez);
+      const trailLen = 200;
+      const tx = ex - eng * Math.sin(plane.yaw) * trailLen;
+      const tz = ez + Math.cos(plane.yaw) * trailLen;
+      const p2 = proj(tx, plane.altitude * 0.3048 - 2, tz);
+      if (p1 && p2) {
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineWidth = Math.max(1, 3 * p1.s);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Windsock near runway
+  const ws = proj(RUNWAY_WIDTH/2 + 80, 5, 350);
+  if (ws) {
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(ws.x, ws.y);
+    ctx.lineTo(ws.x, ws.y - 30 * ws.s);
+    ctx.stroke();
+    // Sock
+    const windDir = Math.atan2(wind.x, wind.z);
+    ctx.fillStyle = '#f60';
+    ctx.beginPath();
+    ctx.moveTo(ws.x, ws.y - 30 * ws.s);
+    ctx.lineTo(ws.x + Math.sin(windDir + plane.yaw) * 15 * ws.s, ws.y - 28 * ws.s);
+    ctx.lineTo(ws.x + Math.sin(windDir + plane.yaw) * 10 * ws.s, ws.y - 22 * ws.s);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Chase view or top view
+  if (viewMode === 1) {
+    // Chase cam - draw plane
+    drawPlaneExternal(W, H);
+  } else if (viewMode === 2) {
+    // Top-down simplified
+    drawTopView(W, H);
+    return;
+  }
+
+  // HUD crosshair (cockpit)
+  if (viewMode === 0) {
+    drawCockpitHUD(W, H);
+  }
+
+  // Minimap
+  drawMinimap();
+}
+
+function drawCockpitHUD(W, H) {
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 1.5;
+
+  const cx = W/2, cy = H/2;
+
+  // Flight path marker (velocity vector)
+  const fpX = cx + Math.sin(plane.pitch) * 100;
+  const fpY = cy - Math.sin(plane.roll) * 50 + Math.cos(plane.pitch) * 20;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - 25, cy);
+  ctx.lineTo(cx - 8, cy);
+  ctx.moveTo(cx + 8, cy);
+  ctx.lineTo(cx + 25, cy);
+  ctx.moveTo(cx, cy + 8);
+  ctx.lineTo(cx, cy + 22);
+  ctx.stroke();
+
+  // Pitch ladder
+  for (let deg = -20; deg <= 20; deg += 5) {
+    if (deg === 0) continue;
+    const py = cy - deg * 4 - Math.sin(plane.pitch) * 200;
+    const pw = deg % 10 === 0 ? 40 : 20;
+    ctx.beginPath();
+    ctx.moveTo(cx - pw, py);
+    ctx.lineTo(cx + pw, py);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (deg % 10 === 0) {
+      ctx.font = '9px Courier New';
+      ctx.fillStyle = '#0f0';
+      ctx.textAlign = 'right';
+      ctx.fillText(Math.abs(deg) + '', cx - pw - 4, py + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(Math.abs(deg) + '', cx + pw + 4, py + 3);
+    }
+  }
+
+  // Speed tape on left
+  const spdX = 80;
+  const spdY = H * 0.4;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(spdX - 25, spdY - 60, 50, 120);
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(spdX - 25, spdY - 60, 50, 120);
+  ctx.fillStyle = '#0f0';
+  ctx.font = '11px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.round(plane.speed), spdX, spdY + 4);
+  ctx.font = '8px Courier New';
+  ctx.fillStyle = '#0a0';
+  ctx.fillText('KTS', spdX, spdY + 16);
+
+  // Speed tape marks
+  for (let s = -40; s <= 40; s += 10) {
+    const markSpd = Math.round(plane.speed) + s;
+    if (markSpd < 0) continue;
+    const my = spdY - s * 2.5;
+    if (my > spdY - 55 && my < spdY + 55) {
+      ctx.beginPath();
+      ctx.moveTo(spdX - 25, my);
+      ctx.lineTo(spdX - 18, my);
+      ctx.strokeStyle = '#0f0';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.font = '8px Courier New';
+      ctx.fillStyle = '#0a0';
+      ctx.textAlign = 'right';
+      ctx.fillText(markSpd, spdX - 28, my + 3);
+    }
+  }
+
+  // Alt tape on right
+  const altX = W - 80;
+  const altY = H * 0.4;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(altX - 25, altY - 60, 50, 120);
+  ctx.strokeStyle = '#0ff';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(altX - 25, altY - 60, 50, 120);
+  ctx.fillStyle = '#0ff';
+  ctx.font = '11px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.round(plane.altitude), altX, altY + 4);
+  ctx.font = '8px Courier New';
+  ctx.fillStyle = '#088';
+  ctx.fillText('FT', altX, altY + 16);
+
+  for (let a = -40; a <= 40; a += 10) {
+    const markAlt = Math.round(plane.altitude) + a * 100;
+    const my = altY - a * 2.5;
+    if (my > altY - 55 && my < altY + 55 && markAlt >= 0) {
+      ctx.beginPath();
+      ctx.moveTo(altX + 25, my);
+      ctx.lineTo(altX + 18, my);
+      ctx.strokeStyle = '#0ff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.font = '8px Courier New';
+      ctx.fillStyle = '#088';
+      ctx.textAlign = 'left';
+      ctx.fillText(markAlt, altX + 28, my + 3);
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawPlaneExternal(W, H) {
+  // Simple external plane view
+  ctx.save();
+  const cx = W/2, cy = H/2 + 50;
+  const sc = 1.5;
+
+  ctx.translate(cx, cy);
+  ctx.rotate(plane.roll);
+  ctx.translate(0, -plane.pitch * 50);
+
+  ctx.fillStyle = '#ddd';
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 2;
+
+  // Fuselage
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 60 * sc, 8 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Wings
+  ctx.beginPath();
+  ctx.moveTo(-15 * sc, 0);
+  ctx.lineTo(-50 * sc, -15 * sc);
+  ctx.lineTo(-48 * sc, -18 * sc);
+  ctx.lineTo(-10 * sc, -3 * sc);
+  ctx.lineTo(10 * sc, -3 * sc);
+  ctx.lineTo(48 * sc, -18 * sc);
+  ctx.lineTo(50 * sc, -15 * sc);
+  ctx.lineTo(15 * sc, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#bbb';
+  ctx.fill();
+  ctx.stroke();
+
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(-55 * sc, 0);
+  ctx.lineTo(-65 * sc, -20 * sc);
+  ctx.lineTo(-58 * sc, -22 * sc);
+  ctx.lineTo(-50 * sc, -5 * sc);
+  ctx.closePath();
+  ctx.fillStyle = '#09f';
+  ctx.fill();
+  ctx.stroke();
+
+  // Horizontal stabilizer
+  ctx.beginPath();
+  ctx.moveTo(-52 * sc, 0);
+  ctx.lineTo(-65 * sc, -8 * sc);
+  ctx.lineTo(-60 * sc, -10 * sc);
+  ctx.lineTo(-48 * sc, -2 * sc);
+  ctx.closePath();
+  ctx.fillStyle = '#bbb';
+  ctx.fill();
+
+  // Engines
+  ctx.fillStyle = '#888';
+  ctx.beginPath();
+  ctx.ellipse(-20 * sc, -5 * sc, 8 * sc, 4 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(20 * sc, -5 * sc, 8 * sc, 4 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Nose
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.ellipse(62 * sc, 0, 6 * sc, 6 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Landing gear (if down)
+  if (plane.gear) {
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 3;
+    // Nose gear
+    ctx.beginPath();
+    ctx.moveTo(50 * sc, 8 * sc);
+    ctx.lineTo(50 * sc, 20 * sc);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(50 * sc, 22 * sc, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+    // Main gear
+    ctx.beginPath();
+    ctx.moveTo(-10 * sc, 8 * sc);
+    ctx.lineTo(-10 * sc, 20 * sc);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(-10 * sc, 22 * sc, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(10 * sc, 8 * sc);
+    ctx.lineTo(10 * sc, 20 * sc);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(10 * sc, 22 * sc, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Flap visual
+  if (plane.flaps > 0) {
+    ctx.fillStyle = `rgba(255,${200-plane.flaps*40},0,0.6)`;
+    ctx.fillRect(-45 * sc, -2 * sc, 35 * sc, plane.flaps * 1.5);
+    ctx.fillRect(10 * sc, -2 * sc, 35 * sc, plane.flaps * 1.5);
+  }
+
+  ctx.restore();
+}
+
+function drawTopView(W, H) {
+  ctx.fillStyle = 'rgba(0,10,0,0.9)';
+  ctx.fillRect(0, 0, W, H);
+
+  const sc = 0.03;
+  const cx = W/2, cy = H/2;
+
+  // Runway
+  ctx.fillStyle = '#444';
+  ctx.fillRect(cx - RUNWAY_WIDTH*sc/2, cy, RUNWAY_WIDTH*sc, RUNWAY_LENGTH*sc);
+
+  // Buildings
+  ctx.fillStyle = '#668';
+  for (const b of buildings) {
+    ctx.fillRect(cx + b.x*sc, cy - b.z*sc, Math.max(2, b.w*sc), Math.max(2, b.d*sc));
+  }
+
+  // Waypoints
+  if (missions[currentMission].waypoints) {
+    for (let i = waypointIdx; i < missions[currentMission].waypoints.length; i++) {
+      const wp = missions[currentMission].waypoints[i];
+      ctx.fillStyle = i === waypointIdx ? '#ff0' : '#f80';
+      ctx.beginPath();
+      ctx.arc(cx + wp.x*sc, cy - wp.z*sc, 6, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Plane
+  ctx.save();
+  ctx.translate(cx - plane.x*sc, cy + plane.z*sc);
+  ctx.rotate(plane.yaw);
+  ctx.fillStyle = '#0f0';
+  ctx.beginPath();
+  ctx.moveTo(8, 0);
+  ctx.lineTo(-5, -5);
+  ctx.lineTo(-5, 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // Compass
+  ctx.fillStyle = '#0f0';
+  ctx.font = '12px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('N', cx, 20);
+  ctx.fillText('S', cx, H - 10);
+  ctx.fillText('E', W - 15, cy + 4);
+  ctx.fillText('W', 15, cy + 4);
+}
+
+function drawMinimap() {
+  mmCtx.clearRect(0, 0, 140, 140);
+  mmCtx.fillStyle = 'rgba(0,15,0,0.9)';
+  mmCtx.fillRect(0, 0, 140, 140);
+
+  const sc = 0.012;
+  const cx = 70, cy = 70;
+
+  mmCtx.fillStyle = '#555';
+  mmCtx.fillRect(cx - RUNWAY_WIDTH*sc/2, cy, RUNWAY_WIDTH*sc, RUNWAY_LENGTH*sc);
+
+  mmCtx.fillStyle = '#335';
+  buildings.forEach(b => mmCtx.fillRect(cx + b.x*sc - 1, cy - b.z*sc - 1, 2, 2));
+
+  if (missions[currentMission].waypoints) {
+    for (let i = waypointIdx; i < missions[currentMission].waypoints.length; i++) {
+      const wp = missions[currentMission].waypoints[i];
+      mmCtx.fillStyle = i === waypointIdx ? '#ff0' : '#f80';
+      mmCtx.beginPath();
+      mmCtx.arc(cx + wp.x*sc, cy - wp.z*sc, 3, 0, Math.PI*2);
+      mmCtx.fill();
+    }
+  }
+
+  mmCtx.save();
+  mmCtx.translate(cx - plane.x*sc, cy + plane.z*sc);
+  mmCtx.rotate(plane.yaw);
+  mmCtx.fillStyle = '#0f0';
+  mmCtx.beginPath();
+  mmCtx.moveTo(0, -4);
+  mmCtx.lineTo(-2.5, 3);
+  mmCtx.lineTo(2.5, 3);
+  mmCtx.closePath();
+  mmCtx.fill();
+  mmCtx.restore();
+
+  mmCtx.strokeStyle = 'rgba(0,255,0,0.3)';
+  mmCtx.strokeRect(0, 0, 140, 140);
+}
+
+// ===== GAUGE DRAWING =====
+function drawGauge(id, value, min, max, label, colorFn, ticks) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const gCtx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W/2 - 10;
+
+  gCtx.clearRect(0, 0, W, H);
+
+  // Background arc
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+  gCtx.strokeStyle = '#333';
+  gCtx.lineWidth = 4;
+  gCtx.stroke();
+
+  // Value arc
+  const range = max - min;
+  const pct = Math.max(0, Math.min(1, (value - min) / range));
+  const startA = Math.PI * 0.75;
+  const endA = startA + pct * Math.PI * 1.5;
+
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, startA, endA);
+  gCtx.strokeStyle = colorFn(pct);
+  gCtx.lineWidth = 4;
+  gCtx.stroke();
+
+  // Tick marks
+  const numTicks = ticks || 10;
+  for (let i = 0; i <= numTicks; i++) {
+    const a = startA + (i / numTicks) * Math.PI * 1.5;
+    const inner = r - 12;
+    const outer = r - 4;
+    gCtx.beginPath();
+    gCtx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+    gCtx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+    gCtx.strokeStyle = '#888';
+    gCtx.lineWidth = 1;
+    gCtx.stroke();
+
+    // Tick label
+    const tickVal = min + (i / numTicks) * range;
+    const lr = r - 22;
+    gCtx.fillStyle = '#666';
+    gCtx.font = '9px Courier New';
+    gCtx.textAlign = 'center';
+    gCtx.textBaseline = 'middle';
+    gCtx.fillText(Math.round(tickVal), cx + Math.cos(a) * lr, cy + Math.sin(a) * lr);
+  }
+
+  // Needle
+  const needleA = startA + pct * Math.PI * 1.5;
+  gCtx.beginPath();
+  gCtx.moveTo(cx, cy);
+  gCtx.lineTo(cx + Math.cos(needleA) * (r - 15), cy + Math.sin(needleA) * (r - 15));
+  gCtx.strokeStyle = colorFn(pct);
+  gCtx.lineWidth = 2.5;
+  gCtx.stroke();
+
+  // Center dot
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+  gCtx.fillStyle = '#333';
+  gCtx.fill();
+}
+
+function drawAttitudeGauge() {
+  const canvas = document.getElementById('gauge-attitude');
+  if (!canvas) return;
+  const gCtx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W/2 - 10;
+
+  gCtx.clearRect(0, 0, W, H);
+  gCtx.save();
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  gCtx.clip();
+
+  // Rotate for roll
+  gCtx.translate(cx, cy);
+  gCtx.rotate(-plane.roll);
+
+  // Sky
+  const pitchOffset = plane.pitch * 3;
+  gCtx.fillStyle = '#1a3a7a';
+  gCtx.fillRect(-r, -r * 2 + pitchOffset, r * 2, r * 2);
+
+  // Ground
+  gCtx.fillStyle = '#5a3a1a';
+  gCtx.fillRect(-r, pitchOffset, r * 2, r * 2);
+
+  // Horizon line
+  gCtx.beginPath();
+  gCtx.moveTo(-r, pitchOffset);
+  gCtx.lineTo(r, pitchOffset);
+  gCtx.strokeStyle = '#fff';
+  gCtx.lineWidth = 2;
+  gCtx.stroke();
+
+  // Pitch lines
+  for (let deg = -30; deg <= 30; deg += 10) {
+    if (deg === 0) continue;
+    const py = pitchOffset - deg * 2.5;
+    const pw = Math.abs(deg) >= 20 ? 30 : 50;
+    gCtx.beginPath();
+    gCtx.moveTo(-pw, py);
+    gCtx.lineTo(pw, py);
+    gCtx.strokeStyle = 'rgba(255,255,255,0.5)';
+    gCtx.lineWidth = 1;
+    gCtx.stroke();
+    gCtx.fillStyle = 'rgba(255,255,255,0.5)';
+    gCtx.font = '8px Courier New';
+    gCtx.textAlign = 'center';
+    gCtx.fillText(Math.abs(deg), -pw - 10, py + 3);
+    gCtx.fillText(Math.abs(deg), pw + 10, py + 3);
+  }
+
+  gCtx.restore();
+
+  // Fixed aircraft symbol
+  gCtx.strokeStyle = '#ff0';
+  gCtx.lineWidth = 2.5;
+  gCtx.beginPath();
+  gCtx.moveTo(cx - 35, cy);
+  gCtx.lineTo(cx - 12, cy);
+  gCtx.moveTo(cx + 12, cy);
+  gCtx.lineTo(cx + 35, cy);
+  gCtx.moveTo(cx - 12, cy + 8);
+  gCtx.lineTo(cx, cy);
+  gCtx.lineTo(cx + 12, cy + 8);
+  gCtx.stroke();
+
+  // Bank angle marks
+  gCtx.save();
+  gCtx.translate(cx, cy);
+  for (const deg of [10, 20, 30, 45, 60]) {
+    for (const side of [-1, 1]) {
+      const a = (-90 + side * deg) * Math.PI / 180;
+      const inner = r - 12;
+      const outer = r - 4;
+      gCtx.beginPath();
+      gCtx.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
+      gCtx.lineTo(Math.cos(a) * outer, Math.sin(a) * outer);
+      gCtx.strokeStyle = '#fff';
+      gCtx.lineWidth = deg === 30 || deg === 60 ? 2 : 1;
+      gCtx.stroke();
+    }
+  }
+  // Top index
+  gCtx.beginPath();
+  gCtx.moveTo(0, -r + 2);
+  gCtx.lineTo(-5, -r + 12);
+  gCtx.lineTo(5, -r + 12);
+  gCtx.closePath();
+  gCtx.fillStyle = '#fff';
+  gCtx.fill();
+  gCtx.restore();
+
+  // Border
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  gCtx.strokeStyle = '#555';
+  gCtx.lineWidth = 3;
+  gCtx.stroke();
+}
+
+function drawVSIGauge() {
+  const canvas = document.getElementById('gauge-vsi');
+  if (!canvas) return;
+  const gCtx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+
+  gCtx.clearRect(0, 0, W, H);
+
+  const vsiFpm = plane.vy * 196.85;
+  const maxVSI = 2000;
+  const clampedVSI = Math.max(-maxVSI, Math.min(maxVSI, vsiFpm));
+
+  // Background
+  gCtx.fillStyle = '#1a1a1a';
+  gCtx.fillRect(0, 0, W, H);
+
+  // Scale
+  const scaleY = 30;
+  const scaleH = H - 60;
+  gCtx.strokeStyle = '#444';
+  gCtx.lineWidth = 1;
+  for (let v = -2000; v <= 2000; v += 500) {
+    const y = cy - (v / maxVSI) * (scaleH / 2);
+    gCtx.beginPath();
+    gCtx.moveTo(cx - 40, y);
+    gCtx.lineTo(cx + 40, y);
+    gCtx.stroke();
+    gCtx.fillStyle = '#888';
+    gCtx.font = '8px Courier New';
+    gCtx.textAlign = 'left';
+    gCtx.fillText(Math.abs(v) + '', cx + 45, y + 3);
+  }
+
+  // Zero line
+  gCtx.strokeStyle = '#fff';
+  gCtx.lineWidth = 2;
+  gCtx.beginPath();
+  gCtx.moveTo(cx - 50, cy);
+  gCtx.lineTo(cx + 50, cy);
+  gCtx.stroke();
+
+  // Pointer
+  const ptrY = cy - (clampedVSI / maxVSI) * (scaleH / 2);
+  gCtx.fillStyle = clampedVSI < -1000 ? '#f00' : '#0f0';
+  gCtx.beginPath();
+  gCtx.moveTo(cx - 35, ptrY);
+  gCtx.lineTo(cx - 20, ptrY - 5);
+  gCtx.lineTo(cx - 20, ptrY + 5);
+  gCtx.closePath();
+  gCtx.fill();
+}
+
+function drawAOAGauge() {
+  const canvas = document.getElementById('gauge-aoa');
+  if (!canvas) return;
+  const gCtx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+
+  gCtx.clearRect(0, 0, W, H);
+  gCtx.fillStyle = '#1a1a1a';
+  gCtx.fillRect(0, 0, W, H);
+
+  const aoaDeg = plane.aoa * 180 / Math.PI;
+  const maxAoA = 25;
+  const clamped = Math.max(-maxAoA, Math.min(maxAoA, aoaDeg));
+
+  // Scale
+  for (let a = -20; a <= 20; a += 5) {
+    const x = cx + (a / maxAoA) * 120;
+    gCtx.beginPath();
+    gCtx.moveTo(x, cy - 15);
+    gCtx.lineTo(x, cy + 15);
+    gCtx.strokeStyle = '#444';
+    gCtx.lineWidth = 1;
+    gCtx.stroke();
+    gCtx.fillStyle = '#666';
+    gCtx.font = '8px Courier New';
+    gCtx.textAlign = 'center';
+    gCtx.fillText(a, x, cy + 30);
+  }
+
+  // Stall zone
+  const stallX = cx + (stallAngles[plane.flaps || 0] / maxAoA) * 120;
+  gCtx.fillStyle = 'rgba(255,0,0,0.2)';
+  gCtx.fillRect(stallX, cy - 20, cx + 130 - stallX, 40);
+
+  // Pointer
+  const ptrX = cx + (clamped / maxAoA) * 120;
+  gCtx.fillStyle = clamped > stallAngles[plane.flaps || 0] ? '#f00' : '#0f0';
+  gCtx.beginPath();
+  gCtx.arc(ptrX, cy, 5, 0, Math.PI * 2);
+  gCtx.fill();
+}
+
+function drawThrottleGauge() {
+  const canvas = document.getElementById('gauge-throttle');
+  if (!canvas) return;
+  const gCtx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W/2 - 10;
+
+  gCtx.clearRect(0, 0, W, H);
+
+  // N1 display (throttle as engine N1%)
+  const n1 = Math.round(plane.throttle * 100);
+
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+  gCtx.strokeStyle = '#333';
+  gCtx.lineWidth = 6;
+  gCtx.stroke();
+
+  const startA = Math.PI * 0.75;
+  const endA = startA + plane.throttle * Math.PI * 1.5;
+
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, startA, endA);
+  gCtx.strokeStyle = plane.throttle > 0.9 ? '#f33' : plane.throttle > 0.7 ? '#f90' : '#0f0';
+  gCtx.lineWidth = 6;
+  gCtx.stroke();
+
+  // Ticks
+  for (let i = 0; i <= 10; i++) {
+    const a = startA + (i / 10) * Math.PI * 1.5;
+    gCtx.beginPath();
+    gCtx.moveTo(cx + Math.cos(a) * (r - 12), cy + Math.sin(a) * (r - 12));
+    gCtx.lineTo(cx + Math.cos(a) * (r - 4), cy + Math.sin(a) * (r - 4));
+    gCtx.strokeStyle = '#888';
+    gCtx.lineWidth = 1;
+    gCtx.stroke();
+  }
+
+  // N1 label
+  gCtx.fillStyle = '#fff';
+  gCtx.font = 'bold 28px Courier New';
+  gCtx.textAlign = 'center';
+  gCtx.textBaseline = 'middle';
+  gCtx.fillText(n1, cx, cy - 5);
+  gCtx.font = '10px Courier New';
+  gCtx.fillStyle = '#888';
+  gCtx.fillText('N1 %', cx, cy + 20);
+
+  gCtx.beginPath();
+  gCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  gCtx.strokeStyle = '#444';
+  gCtx.lineWidth = 3;
+  gCtx.stroke();
+}
+
+// ===== HUD UPDATE =====
+function updateHUD() {
+  const hdg = Math.round(((plane.yaw * 180 / Math.PI) % 360 + 360) % 360);
+  const vsi = Math.round(plane.vy * 196.85);
+  const aoaDeg = (plane.aoa * 180 / Math.PI).toFixed(1);
+
+  document.getElementById('s-alt').textContent = Math.round(Math.max(0, plane.altitude));
+  document.getElementById('s-spd').textContent = Math.round(plane.speed);
+  document.getElementById('s-hdg').textContent = String(hdg).padStart(3, '0');
+  document.getElementById('s-vsi').textContent = (vsi > 0 ? '+' : '') + vsi;
+  document.getElementById('s-g').textContent = plane.gForce.toFixed(1);
+  document.getElementById('s-aoa').textContent = aoaDeg;
+  document.getElementById('s-flaps').textContent = plane.flaps === 0 ? 'UP' : plane.flaps < 4 ? plane.flaps : 'FULL';
+  document.getElementById('s-gear').textContent = plane.gear ? 'DOWN' : 'UP';
+  document.getElementById('s-brake').textContent = plane.brake ? 'ON' : 'OFF';
+
+  // Gauge values
+  document.getElementById('gv-spd').textContent = Math.round(plane.speed);
+  document.getElementById('gv-alt').textContent = Math.round(Math.max(0, plane.altitude));
+  document.getElementById('gv-hdg').textContent = String(hdg).padStart(3, '0');
+  document.getElementById('gv-vsi').textContent = (vsi > 0 ? '+' : '') + vsi;
+  document.getElementById('gv-thr').textContent = Math.round(plane.throttle * 100) + '%';
+  document.getElementById('gv-aoa').textContent = aoaDeg;
+
+  // Color coding
+  const g = document.getElementById('s-g');
+  g.style.color = plane.gForce > 2 ? '#f00' : plane.gForce > 1.5 ? '#f90' : '#0f0';
+
+  const a = document.getElementById('s-aoa');
+  a.style.color = Math.abs(plane.aoa * 180 / Math.PI) > stallAngles[plane.flaps] ? '#f00' : '#0f0';
+
+  // Fuel
+  document.getElementById('fuel-bar').style.height = (fuel / AC.maxFuel * 100) + '%';
+  document.getElementById('fuel-bar').style.background = fuel < AC.maxFuel * 0.2 ? '#f00' : fuel < AC.maxFuel * 0.4 ? '#f90' : '#0f0';
+
+  // Analog gauges
+  const spdColor = p => plane.speed > AC.maxSpeedKts ? '#f00' : plane.speed < 100 ? '#f90' : '#0f0';
+  drawGauge('gauge-airspeed', plane.speed, 0, 400, 'KTS', spdColor, 8);
+  drawAttitudeGauge();
+  drawGauge('gauge-altimeter', Math.max(0, plane.altitude), 0, 40000, 'FT', () => '#0ff', 8);
+  drawVSIGauge();
+  drawGauge('gauge-hdg', hdg, 0, 360, 'DEG', () => '#0f0', 12);
+  drawThrottleGauge();
+  drawAOAGauge();
+}
+
+// ===== MAIN LOOP =====
+function gameLoop(timestamp) {
+  if (!gameRunning || paused) return;
+
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+  lastTime = timestamp;
+
+  updatePhysics(dt);
+  updateHUD();
+  render();
+
+  requestAnimationFrame(gameLoop);
+}
+
+// ===== START / RESTART =====
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  resetPlane();
+  gameRunning = true;
+  gameOver = false;
+  paused = false;
+  lastTime = performance.now();
+  waypointIdx = 0;
+  missionPhase = 'takeoff';
+  fuel = AC.maxFuel;
+  simTime = 0;
+  document.getElementById('game-overlay').style.display = 'none';
+  document.getElementById('crash-flash').style.background = 'none';
+  requestAnimationFrame(gameLoop);
+}
+
+function resetPlane() {
+  plane.x = 0;
+  plane.y = 0;
+  plane.z = 200;
+  plane.vx = 0; plane.vy = 0; plane.vz = 0;
+  plane.pitch = 0; plane.roll = 0; plane.yaw = 0;
+  plane.pitchVel = 0; plane.rollVel = 0; plane.yawVel = 0;
+  plane.speed = 0;
+  plane.altitude = 0;
+  plane.throttle = 0;
+  plane.targetThrottle = 0;
+  plane.onGround = true;
+  plane.gear = true;
+  plane.flaps = 2;
+  plane.brake = false;
+  plane.gForce = 1;
+  plane.aoa = 0;
+  plane.spoilers = 0;
+}
+
+function restartGame() {
+  resetPlane();
+  gameOver = false;
+  paused = false;
+  fuel = AC.maxFuel;
+  simTime = 0;
+  waypointIdx = 0;
+  missionPhase = 'takeoff';
+  document.getElementById('game-overlay').style.display = 'none';
+  document.getElementById('crash-flash').style.background = 'none';
+  document.getElementById('pause-overlay').style.display = 'none';
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+</script>
+</body>
+</html>
