@@ -2,7 +2,7 @@
 const galaxyData = {
   milkyway: {
     name: "Via Lattea",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/ESO-VLT-Laser-phot-33a-07.jpg/1280px-ESO-VLT-Laser-phot-33a-07.jpg",
+    img: "images/milkyway.jpg",
     type: "Spirale barrata (SBbc)",
     dist: "Nostra galassia (0 anni luce)",
     diametro: "~100.000 anni luce",
@@ -18,7 +18,7 @@ const galaxyData = {
   },
   andromeda: {
     name: "Galassia di Andromeda (M31)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Andromeda_Galaxy_560mm_FL.jpg/1280px-Andromeda_Galaxy_560mm_FL.jpg",
+    img: "images/andromeda.jpg",
     type: "Spirale (SA(s)b)",
     dist: "2,537 milioni di anni luce",
     diametro: "~220.000 anni luce",
@@ -34,7 +34,7 @@ const galaxyData = {
   },
   triangolo: {
     name: "Galassia del Triangolo (M33)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Triangulum_Galaxy_M33_Scubi.jpg/1280px-Triangulum_Galaxy_M33_Scubi.jpg",
+    img: "images/triangolo.jpg",
     type: "Spirale (SA(s)cd)",
     dist: "2,73 milioni di anni luce",
     diametro: "~60.000 anni luce",
@@ -50,7 +50,7 @@ const galaxyData = {
   },
   sombrero: {
     name: "Galassia del Sombrero (M104)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sombrero_Galaxy_560mm_FL.jpg/1280px-Sombrero_Galaxy_560mm_FL.jpg",
+    img: "images/sombrero.jpg",
     type: "Spirale barrata (SA(s)a)",
     dist: "29,35 milioni di anni luce",
     diametro: "~50.000 anni luce",
@@ -66,7 +66,7 @@ const galaxyData = {
   },
   magellano: {
     name: "Grande Nube di Magellano (LMC)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/NGC_2070_-_TOO_-_ESO.jpg/1024px-NGC_2070_-_TOO_-_ESO.jpg",
+    img: "images/magellano.jpg",
     type: "Irr I (SB(s)m)",
     dist: "160.000 anni luce",
     diametro: "~14.000 anni luce",
@@ -82,7 +82,7 @@ const galaxyData = {
   },
   m87: {
     name: "Messier 87 (M87 / Virgo A)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/M87_jet.jpg/1024px-M87_jet.jpg",
+    img: "images/m87.jpg",
     type: "Ellittica gigante (E0-1)",
     dist: "53,49 milioni di anni luce",
     diametro: "~120.000 anni luce",
@@ -98,7 +98,7 @@ const galaxyData = {
   },
   whirlpool: {
     name: "Galassia Whirlpool (M51)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Whirlpool_Galaxy_by_Hubble.jpg/1024px-Whirlpool_Galaxy_by_Hubble.jpg",
+    img: "images/whirlpool.jpg",
     type: "Spirale (SA(s)bc)",
     dist: "23 milioni di anni luce",
     diametro: "~76.000 anni luce",
@@ -114,7 +114,7 @@ const galaxyData = {
   },
   "piccola-magellano": {
     name: "Piccola Nube di Magellano (SMC)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/SMC_-_Gems_of_the_Southern_Sky_-_ESO_-_1024.jpg/1024px-SMC_-_Gems_of_the_Southern_Sky_-_ESO_-_1024.jpg",
+    img: "images/piccolamagellano.jpg",
     type: "Irr I / SB(s)m",
     dist: "200.000 anni luce",
     diametro: "~7.000 anni luce",
@@ -130,7 +130,7 @@ const galaxyData = {
   },
   boomerang: {
     name: "Nebulosa Boomerang",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Boomerang_Nebula_HST.png/1024px-Boomerang_Nebula_HST.png",
+    img: "images/boomerang.jpg",
     type: "Nebulosa protoplanetaria",
     dist: "~5.000 anni luce",
     diametro: "~1 anno luce",
@@ -146,7 +146,7 @@ const galaxyData = {
   },
   antennae: {
     name: "Galassie Antenne (NGC 4038/4039)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Antennae_Galaxies_-_Potentially_Hostile_-_PIA19780.jpg/1024px-Antennae_Galaxies_-_Potentially_Hostile_-_PIA19780.jpg",
+    img: "images/antennae.jpg",
     type: "In interazione",
     dist: "45 milioni di anni luce",
     diametro: "~350.000 anni luce (including tails)",
@@ -162,7 +162,7 @@ const galaxyData = {
   },
   cartwheel: {
     name: "Galassia della Ruota di Carro",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Cartwheel_Galaxy_560mm_FL.jpg/1024px-Cartwheel_Galaxy_560mm_FL.jpg",
+    img: "images/cartwheel.jpg",
     type: "Anulare (ring)",
     dist: "~500 milioni di anni luce",
     diametro: "~150.000 anni luce",
@@ -178,7 +178,7 @@ const galaxyData = {
   },
   blackeye: {
     name: "Black Eye Galaxy (M64)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/NGC_4826_-_Black_Eye_Galaxy_-_Heic0415a.jpg/1024px-NGC_4826_-_Black_Eye_Galaxy_-_Heic0415a.jpg",
+    img: "images/blackeye.jpg",
     type: "Spirale (SA(rs)ab)",
     dist: "17 milioni di anni luce",
     diametro: "~50.000 anni luce",
@@ -194,7 +194,7 @@ const galaxyData = {
   },
   tirano: {
     name: "M106 (Cane Maggiore)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/M106_%28Messier_106%29.jpg/1024px-M106_%28Messier_106%29.jpg",
+    img: "images/tirano.jpg",
     type: "Spirale barrata (SAB(s)bc)",
     dist: "22,8 milioni di anni luce",
     diametro: "~130.000 anni luce",
@@ -210,7 +210,7 @@ const galaxyData = {
   },
   occhio: {
     name: "Galassia dell'Occhio di Gatto (M94)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M94_Galaxy_by_Hubble.jpg/1024px-M94_Galaxy_by_Hubble.jpg",
+    img: "images/occhio.jpg",
     type: "Spirale / Lenticolare (SA(s)ab)",
     dist: "16 milioni di anni luce",
     diametro: "~40.000 anni luce",
@@ -226,7 +226,7 @@ const galaxyData = {
   },
   cigaro: {
     name: "Galassia del Cigaro (M82)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/M82_HST_big_stelum.jpg/1024px-M82_HST_big_stelum.jpg",
+    img: "images/cigaro.jpg",
     type: "Irregolare (I0 pec)",
     dist: "11,4 milioni di anni luce",
     diametro: "~37.000 anni luce",
@@ -242,7 +242,7 @@ const galaxyData = {
   },
   sirena: {
     name: "NGC 1300 (Sirena)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/NGC_1300_-_ERL_-_ESO.jpg/1024px-NGC_1300_-_ERL_-_ESO.jpg",
+    img: "images/sirena.jpg",
     type: "Spirale barrata (SB(s)bc)",
     dist: "~69 milioni di anni luce",
     diametro: "~110.000 anni luce",
@@ -258,7 +258,7 @@ const galaxyData = {
   },
   foca: {
     name: "NGC 2903 (Leone)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/NGC_2903_-_Galactic_Nucleus_-_ESO.jpg/1024px-NGC_2903_-_Galactic_Nucleus_-_ESO.jpg",
+    img: "images/foca.jpg",
     type: "Spirale barrata (SB(s)d)",
     dist: "~30 milioni di anni luce",
     diametro: "~90.000 anni luce",
@@ -274,7 +274,7 @@ const galaxyData = {
   },
   pescatore: {
     name: "NGC 1637 (Eridano)",
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/NGC_1637_by_Esurvey.jpg/1024px-NGC_1637_by_Esurvey.jpg",
+    img: "images/pescatore.jpg",
     type: "Spirale (SAB(rs)c)",
     dist: "~38 milioni di anni luce",
     diametro: "~65.000 anni luce",

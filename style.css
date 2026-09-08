@@ -85,7 +85,7 @@ header {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Hubble_ultra_deep_field_high_rez_edit1.jpg/1280px-Hubble_ultra_deep_field_high_rez_edit1.jpg') center/cover no-repeat;
+  background: url('images/hero-bg.jpg') center/cover no-repeat;
   opacity: 0.3;
   animation: slowZoom 60s linear infinite;
 }
