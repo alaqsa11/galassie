@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Galassie - Guida Completa</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <nav id="navbar">
+    <div class="nav-brand"><i class="fas fa-star"></i> Galassie</div>
+    <ul id="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#che-cosa-sono">Che sono</a></li>
+      <li><a href="#classificazione">Classificazione</a></li>
+      <li><a href="#galleria">Galleria</a></li>
+      <li><a href="#storia">Storia</a></li>
+      <li><a href="#curiosita">Curiosit&agrave;</a></li>
+    </ul>
+    <button id="hamburger" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  </nav>
+
+  <!-- HERO -->
+  <header id="home">
+    <div class="hero-overlay"></div>
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-content">
+      <h1>Viaggio tra le <span>Galassie</span></h1>
+      <p>Scopri l'universo: storia, scienza e bellezza delle galassie che popolano il cosmo</p>
+      <a href="#galleria" class="btn"><i class="fas fa-telescope"></i> Esplora le Galassie</a>
+    </div>
+  </header>
+
+  <!-- CHE COSA SONO -->
+  <section id="che-cosa-sono">
+    <h2>Che cosa sono le Galassie?</h2>
+    <p>Una <strong>galassia</strong> &egrave; un immenso sistema di stelle, polvere cosmica, gas e materia oscura, tenuti insieme dalla gravit&agrave;. Ogni galassia pu&ograve; contenere da pochi miliardi a trilioni di stelle e estendersi per centinaia di migliaia di anni luce.</p>
+    <div class="info-cards">
+      <div class="info-card">
+        <i class="fas fa-atom"></i>
+        <h3>Composizione</h3>
+        <p>Stelle, gas (idrogeno e elio), polvere cosmica e un'enorme quantit&agrave; di materia oscura che costituisce circa l'85% della massa totale.</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-arrows-alt-h"></i>
+        <h3>Dimensioni</h3>
+        <p>Possono estendersi da poche migliaia a oltre un milione di anni luce di diametro. La Via Lattea ha circa 100.000 anni luce.</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-asterisk"></i>
+        <h3>Numero</h3>
+        <p>Nell'universo osservabile si stimano circa 2 trilioni di galassie, anche se ne sono state catalogate solo alcune centinaia di migliaia.</p>
+      </div>
+      <div class="info-card">
+        <i class="fas fa-hamsa"></i>
+        <h3>Formazione</h3>
+        <p>Le galassie si sono formate durante le prime epoche dell'universo, poche centinaia di milioni di anni dopo il Big Bang.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLASSIFICAZIONE -->
+  <section id="classificazione">
+    <h2>Classificazione delle Galassie</h2>
+    <p>Le galassie vengono classificate in base alla loro forma seguendo la <strong>sequenza di Hubble</strong>, il sistema pi&ugrave; utilizzato in astronomia.</p>
+    <div class="classification">
+      <div class="class-card elliptical">
+        <div class="class-icon"><i class="fas fa-circle"></i></div>
+        <h3>Ellittiche (E)</h3>
+        <p>Forma rotonda o ellittica. Contengono stelle vecchie e poco gas. Esempio: M87. Sono le galassie pi&ugrave; grandi in termini di massa.</p>
+      </div>
+      <div class="class-card spiral">
+        <div class="class-icon"><i class="fas fa-compact-disc"></i></div>
+        <h3>Spirali (S)</h3>
+        <p>Brazi spirali che si avvolgono attorno al nucleo. Ricche di gas e polvere con attiva formazione stellare. Esempio: Via Lattea, Andromeda.</p>
+      </div>
+      <div class="class-card barred">
+        <div class="class-icon"><i class="fas fa-grip-lines"></i></div>
+        <h3>Spirali a Barra (SB)</h3>
+        <p>Simili alle spirali ma con una struttura a barra centrale. La Via Lattea &egrave; una spirale a barra. Esempio: NGC 1300.</p>
+      </div>
+      <div class="class-card lenticular">
+        <div class="class-icon"><i class="fas fa-sun"></i></div>
+        <h3>Lenticolari (S0)</h3>
+        <p>Forma intermedia tra ellittiche e spirali. Hanno un disco ma senza brazi evidenti. Poco gas residuo.</p>
+      </div>
+      <div class="class-card irregular">
+        <div class="class-icon"><i class="fas fa-shapes"></i></div>
+        <h3>Irregolari (Irr)</h3>
+        <p>Senza forma definita. Spesso il risultato di interazioni gravitazionali. Esempio: Grande Nube di Magellano.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERIA -->
+  <section id="galleria">
+    <h2>Le Galassie pi&ugrave; Famose</h2>
+    <p>Esplora le galassie pi&ugrave; iconiche dell'universo osservabile.</p>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Tutte</button>
+      <button class="filter-btn" data-filter="spirale">Spirali</button>
+      <button class="filter-btn" data-filter="ellittica">Ellittiche</button>
+      <button class="filter-btn" data-filter="irregolare">Irregolari</button>
+    </div>
+
+    <div class="galaxy-grid" id="galaxy-grid">
+
+      <!-- 1. VIA LATTEA -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('milkyway')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/ESO-VLT-Laser-phot-33a-07.jpg/1280px-ESO-VLT-Laser-phot-33a-07.jpg" alt="Via Lattea" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Via Lattea</h3>
+          <span class="galaxy-type">Spirale barrata</span>
+          <span class="galaxy-dist">Nostra galassia</span>
+        </div>
+      </div>
+
+      <!-- 2. ANDROMEDA -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('andromeda')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Andromeda_Galaxy_560mm_FL.jpg/1280px-Andromeda_Galaxy_560mm_FL.jpg" alt="Galassia di Andromeda" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia di Andromeda (M31)</h3>
+          <span class="galaxy-type">Spirale</span>
+          <span class="galaxy-dist">2,5 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 3. TRIANGOLO -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('triangolo')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Triangulum_Galaxy_M33_Scubi.jpg/1280px-Triangulum_Galaxy_M33_Scubi.jpg" alt="Galassia del Triangolo" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia del Triangolo (M33)</h3>
+          <span class="galaxy-type">Spirale</span>
+          <span class="galaxy-dist">2,73 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 4. SOMBRERO -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('sombrero')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sombrero_Galaxy_560mm_FL.jpg/1280px-Sombrero_Galaxy_560mm_FL.jpg" alt="Galassia del Sombrero" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia del Sombrero (M104)</h3>
+          <span class="galaxy-type">Spirale barrata</span>
+          <span class="galaxy-dist">29 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 5. GRANDE NUBE DI MAGELLANO -->
+      <div class="galaxy-card" data-type="irregolare" onclick="openModal('magellano')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/NGC_2070_-_TOO_-_ESO.jpg/1024px-NGC_2070_-_TOO_-_ESO.jpg" alt="Grande Nube di Magellano" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Grande Nube di Magellano</h3>
+          <span class="galaxy-type">Irr I</span>
+          <span class="galaxy-dist">160.000 anni luce</span>
+        </div>
+      </div>
+
+      <!-- 6. MESSIER 87 -->
+      <div class="galaxy-card" data-type="ellittica" onclick="openModal('m87')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/M87_jet.jpg/1024px-M87_jet.jpg" alt="M87" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Messier 87 (M87)</h3>
+          <span class="galaxy-type">Ellittica gigante</span>
+          <span class="galaxy-dist">53 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 7. WHIRLPOOL -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('whirlpool')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Whirlpool_Galaxy_by_Hubble.jpg/1024px-Whirlpool_Galaxy_by_Hubble.jpg" alt="Whirlpool Galaxy" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia Whirlpool (M51)</h3>
+          <span class="galaxy-type">Spirale</span>
+          <span class="galaxy-dist">23 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 8. PICCOLA NUBE DI MAGELLANO -->
+      <div class="galaxy-card" data-type="irregolare" onclick="openModal('piccola-magellano')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/SMC_-_Gems_of_the_Southern_Sky_-_ESO_-_1024.jpg/1024px-SMC_-_Gems_of_the_Southern_Sky_-_ESO_-_1024.jpg" alt="Piccola Nube di Magellano" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Piccola Nube di Magellano</h3>
+          <span class="galaxy-type">Irr I / SBO</span>
+          <span class="galaxy-dist">200.000 anni luce</span>
+        </div>
+      </div>
+
+      <!-- 9. BOOMERANG -->
+      <div class="galaxy-card" data-type="ellittica" onclick="openModal('boomerang')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Boomerang_Nebula_HST.png/1024px-Boomerang_Nebula_HST.png" alt="Boomerang Nebula" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Nebulosa Boomerang</h3>
+          <span class="galaxy-type">Nebulosa protoplanetaria</span>
+          <span class="galaxy-dist">5.000 anni luce</span>
+        </div>
+      </div>
+
+      <!-- 10. ANTENNAM -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('antennae')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Antennae_Galaxies_-_Potentially_Hostile_-_PIA19780.jpg/1024px-Antennae_Galaxies_-_Potentially_Hostile_-_PIA19780.jpg" alt="Antennae Galaxies" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassie Antenne (NGC 4038/4039)</h3>
+          <span class="galaxy-type">In interazione</span>
+          <span class="galaxy-dist">45 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 11. CARTWHEEL -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('cartwheel')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Cartwheel_Galaxy_560mm_FL.jpg/1024px-Cartwheel_Galaxy_560mm_FL.jpg" alt="Cartwheel Galaxy" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia della Ruota di Carro</h3>
+          <span class="galaxy-type">Anulare</span>
+          <span class="galaxy-dist">500 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 12. BLACK EYE -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('blackeye')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/NGC_4826_-_Black_Eye_Galaxy_-_Heic0415a.jpg/1024px-NGC_4826_-_Black_Eye_Galaxy_-_Heic0415a.jpg" alt="Black Eye Galaxy" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Black Eye Galaxy (M64)</h3>
+          <span class="galaxy-type">Spirale</span>
+          <span class="galaxy-dist">17 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 13. TIRANO -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('tirano')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/M106_%28Messier_106%29.jpg/1024px-M106_%28Messier_106%29.jpg" alt="Galassia del Cane Maggiore" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>M106 (Cane Maggiore)</h3>
+          <span class="galaxy-type">Spirale barrata</span>
+          <span class="galaxy-dist">22 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 14. OCCHIO DI GATTO -->
+      <div class="galaxy-card" data-type="ellittica" onclick="openModal('occhio')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M94_Galaxy_by_Hubble.jpg/1024px-M94_Galaxy_by_Hubble.jpg" alt="M94 - Occhio di Gatto" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia dell'Occhio di Gatto (M94)</h3>
+          <span class="galaxy-type">Spirale / Lenticolare</span>
+          <span class="galaxy-dist">16 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 15. CIGARO -->
+      <div class="galaxy-card" data-type="ellittica" onclick="openModal('cigaro')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/M82_HST_big_stelum.jpg/1024px-M82_HST_big_stelum.jpg" alt="Galassia del Cigaro" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>Galassia del Cigaro (M82)</h3>
+          <span class="galaxy-type">Irregolare starburst</span>
+          <span class="galaxy-dist">12 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 16. SIRENA -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('sirena')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/NGC_1300_-_ERL_-_ESO.jpg/1024px-NGC_1300_-_ERL_-_ESO.jpg" alt="NGC 1300" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>NGC 1300 (Sirena)</h3>
+          <span class="galaxy-type">Spirale barrata</span>
+          <span class="galaxy-dist">69 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 17. FOCA -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('foca')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/NGC_2903_-_Galactic_Nucleus_-_ESO.jpg/1024px-NGC_2903_-_Galactic_Nucleus_-_ESO.jpg" alt="NGC 2903" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>NGC 2903 (Leone)</h3>
+          <span class="galaxy-type">Spirale barrata</span>
+          <span class="galaxy-dist">30 milioni di anni luce</span>
+        </div>
+      </div>
+
+      <!-- 18. PESCATORE -->
+      <div class="galaxy-card" data-type="spirale" onclick="openModal('pescatore')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/NGC_1637_by_Esurvey.jpg/1024px-NGC_1637_by_Esurvey.jpg" alt="NGC 1637" loading="lazy">
+        <div class="galaxy-overlay">
+          <h3>NGC 1637 (Eridano)</h3>
+          <span class="galaxy-type">Spirale</span>
+          <span class="galaxy-dist">38 milioni di anni luce</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STORIA DELL'ASTRONOMIA -->
+  <section id="storia">
+    <h2>Storia dell'Osservazione delle Galassie</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">964 d.C.</span>
+          <h3>Al-Sufi - Libro delle Stelle Fisse</h3>
+          <p>Il persiano Abd al-Rahman al-Sufi descrive per la prima volta la "Nuvola Minore" (Grande Nube di Magellano), documentandola come una "nuvola" nel cielo australe.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1610</span>
+          <h3>Galileo e la Via Lattea</h3>
+          <p>Galileo Galilei dimostra che la Via Lattea &egrave; composta da innumerevoli stelle, inizialmente osservate come un alone luminoso nel cielo notturno.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1755</span>
+          <h3>Kant - "Nebolose" Cosmiche</h3>
+          <p>Immanuel Kant suggerisce che le "nebulose a spirale" osservate nel cielo potrebbero essere "universi-isola" separati dalla Via Lattea.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1781</span>
+          <h3>Catalogo di Messier</h3>
+          <p>Charles Messier pubblica il suo catalogo di 103 oggetti "nebulosi", tra cui molte galassie (allora chiamate "nebulose spettrali"). Alcuni famosi: M31 (Andromeda), M33, M51, M87.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1845</span>
+          <h3>Lord Rosse - Prima Galassia a Spirale</h3>
+          <p>Lord Rosse osserva la Galassia del Timpano (M51) con il suo telescopio di 72 pollici e ne disegna la struttura a spirale, confermando che le nebulose erano strutture distinte.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1918</span>
+          <h3>Velocit&agrave; di Andromeda</h3>
+          <p>Vesto Slipher misura la velocit&agrave; radiale della Galassia di Andromeda, scoprendo che si allontana da noi a circa 300 km/s, suggerendo che si tratta di un oggetto esterno.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1920</span>
+          <h3>Il Grande Dibattito</h3>
+          <p>Heber Curtis (nebulose extra-galattiche) e Harlow Shapley (nebulose all'interno della Via Lattea) si confrontano sulla natura delle nebulose. Il dibattito si risolver&agrave; solo con Hubble.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1923-1924</span>
+          <h3>Hubble - Osservazioni Rivoluzionarie</h3>
+          <p>Edwin Hubble usa le Cefeidi nella Galassia di Andromeda per misurarne la distanza, dimostrando conclusivamente che si tratta di una galassia separata dalla Via Lattea, a milioni di anni luce.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1929</span>
+          <h3>Legge di Hubble</h3>
+          <p>Hubble formula la relazione tra la distanza e la velocit&agrave; di recessione delle galassie, dimostrando che l'universo si sta espandendo. Osserva che le galassie pi&ugrave; lontane si allontanano pi&ugrave; velocemente.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1990</span>
+          <h3>Telescopio Spaziale Hubble</h3>
+          <p>Viene lanciato il Telescopio Spaziale Hubble (HST), rivoluzionando lo studio delle galassie con immagini ad alta risoluzione, immagini del "Deep Field" e scoperte sulle galassie pi&ugrave; lontane.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">1998</span>
+          <h3>Energia Oscura</h3>
+          <p>Studi sulle supernove di tipo Ia in galassie lontane rivelano che l'espansione dell'universo si sta accelerando, introducendo il concetto di energia oscura.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <span class="year">2004-2024</span>
+          <h3>Campi Profondi e JWST</h3>
+          <p>Hubble cattura il campo profondo di Hubble, rivelando migliaia di galassie in un'infinitesima parte del cielo. Nel 2022, il James Webb Space Telescope (JWST) inizia a osservare galassie ancora pi&ugrave; antiche e distanti, tornando a 300 milioni di anni dopo il Big Bang.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CURIOSITÀ -->
+  <section id="curiosita">
+    <h2>Curiosit&agrave; sulle Galassie</h2>
+    <div class="facts-grid">
+      <div class="fact-card">
+        <div class="fact-number">01</div>
+        <h3>Fusione Galattica</h3>
+        <p>La Via Lattea e Andromeda si stanno avvicinando a circa 110 km/s e si fonderanno tra circa 4,5 miliardi di anni, formando un'unica galassia ellittica chiamata "Milkomeda".</p>
+      </div>
+      <div class="fact-card">
+        <div class="fact-number">02</div>
+        <h3>Buchi Neri Supermassicci</h3>
+        <p>Ogni galassia di grandi dimensioni ha al centro un buco nero supermassiccio. Il buco nero della Via Lattea si chiama Sagittarius A* e ha circa 4 milioni di masse solari.</p>
+      </div>
+      <div class="fact-card">
+        <div class="fact-number">03</div>
+        <h3>La Galassia Pi&ugrave; Grande</h3>
+        <p>IC 1101 &egrave; la galassia pi&ugrave; grande conosciuta, con un diametro di circa 5,5 milioni di anni luce. Contiene oltre 100 trilioni di stelle.</p>
+      </div>
+      <div class="fact-card">
+        <div class="fact-number">04</div>
+        <h3>Velocit&agrave; della Luce</h3>
+        <p>La luce impiega circa 100.000 anni per attraversare la Via Lattea da un capo all'altro, ma noi possiamo osservare la galassia "in tempo reale" essendo al suo interno.</p>
+      </div>
+      <div class="fact-card">
+        <div class="fact-number">05</div>
+        <h3>Galassia Oscura</h3>
+        <p>Alcune galassie sono composte quasi esclusivamente di materia oscura e non emettono luce visibile, rendendole praticamente invisibili ai telescopi tradizionali.</p>
+      </div>
+      <div class="fact-card">
+        <div class="fact-number">06</div>
+        <h3>Materia Oscura</h3>
+        <p>Le galassie ruotano troppo velocemente per essere tenute insieme solo dalla massa visibile. La materia oscura costituisce circa l'85% della massa di ogni galassia.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3><i class="fas fa-star"></i> Galassie</h3>
+        <p>Un viaggio alla scoperta delle galassie. Sito di esempio a scopo educativo.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Link Utili</h3>
+        <ul>
+          <li><a href="https://esawebb.org/" target="_blank">James Webb Telescope</a></li>
+          <li><a href="https://www.nasa.gov/mission_pages/hubble/main/" target="_blank">NASA Hubble</a></li>
+          <li><a href="https://www.esa.int/Science_Exploration/Space_Science/Hubble" target="_blank">ESA Hubble</a></li>
+          <li><a href="https://www.wikipedia.org/" target="_blank">Wikipedia</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Immagini</h3>
+        <p>Le immagini sono di dominio pubblico, fornite da NASA, ESA e Wikimedia Commons.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Viaggio tra le Galassie &mdash; Sito di Esempio</p>
+    </div>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal" id="galaxy-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
