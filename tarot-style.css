@@ -75,8 +75,11 @@ header {
   position: relative;
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 2.5rem;
+  padding-bottom: 5rem;
   text-align: center;
   overflow: hidden;
   background: radial-gradient(ellipse at center, #1a1040 0%, #0a0a1a 70%);
@@ -128,6 +131,104 @@ header {
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* FAN / VENTAGLIO CARTE */
+.fan-section {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 4.5rem 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fan-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.fan-subtitle {
+  color: #b0b0c8;
+  font-size: 1.02rem;
+  margin-bottom: 1.2rem;
+  max-width: 640px;
+}
+
+.fan-container {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  height: 480px;
+  margin: 0 auto;
+}
+
+.fan-container.has-revealed .fan-card:not(.revealed) {
+  filter: brightness(0.45);
+  opacity: 0.55;
+}
+
+.tarot-card.fan-card {
+  position: absolute;
+  width: 76px;
+  height: 118px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), left 0.8s cubic-bezier(0.4, 0, 0.2, 1), top 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarot-card.fan-card:hover {
+  z-index: 200;
+}
+
+.tarot-card.fan-card .card-face {
+  border-width: 2px;
+  border-radius: 8px;
+}
+
+.fan-card.revealed {
+  z-index: 300 !important;
+  filter: drop-shadow(0 0 30px rgba(250, 204, 21, 0.7));
+}
+
+.fan-card.revealed .card-front {
+  box-shadow: 0 0 40px rgba(250, 204, 21, 0.45);
+}
+
+.fan-result {
+  width: 100%;
+  max-width: 640px;
+  margin-top: 2rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(192,132,252,0.3);
+  border-radius: 16px;
+  padding: 1.8rem 2rem;
+  animation: fadeIn 0.6s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fan-result-card p {
+  color: #b0b0c8;
+  line-height: 1.8;
+}
+
+.fan-result-card h4 {
+  color: #c084fc;
+  margin: 1rem 0 0.4rem;
+}
+
+.fan-result-name {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.4rem;
 }
 
 .btn {
@@ -428,6 +529,10 @@ section > p {
 
 .tarot-card.selected {
   filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.6));
+}
+
+.tarot-card.dragging .tarot-card-inner {
+  transition: none !important;
 }
 
 /* CELTIC CROSS LAYOUT */
@@ -848,6 +953,19 @@ footer {
 
   .hero-content h1 {
     font-size: 2.2rem;
+  }
+
+  .fan-container {
+    height: 300px;
+  }
+
+  .tarot-card.fan-card {
+    width: 54px;
+    height: 84px;
+  }
+
+  .fan-title {
+    font-size: 1.6rem;
   }
 
   section {

@@ -23,6 +23,24 @@
   <header id="home">
     <div class="hero-overlay"></div>
     <div class="hero-particles" id="particles"></div>
+
+    <div class="fan-section">
+      <h2 class="fan-title">Scegli una Carta dal Ventaglio</h2>
+      <p class="fan-subtitle">Tutte le carte sono mescolate davanti a te: tocca una carta per rivelare il tuo messaggio</p>
+      <div class="fan-container" id="fan-container"></div>
+      <div class="fan-result hidden" id="fan-result">
+        <div class="fan-result-card">
+          <span id="fan-result-name" class="fan-result-name"></span>
+          <span id="fan-result-badge" class="interp-badge"></span>
+          <p id="fan-result-meaning"></p>
+          <div id="fan-result-keywords" class="interp-keywords"></div>
+          <h4>Consiglio</h4>
+          <p id="fan-result-advice"></p>
+        </div>
+        <button class="btn btn-secondary" onclick="resetFan()"><i class="fas fa-redo"></i> Scegli un'Altra Carta</button>
+      </div>
+    </div>
+
     <div class="hero-content">
       <h1>Il Giardino dei <span>Tarocchi</span></h1>
       <p>Scopri i misteri del tuo destino attraverso l'antica arte della lettura dei tarocchi</p>

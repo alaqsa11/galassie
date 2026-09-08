@@ -1,3 +1,11 @@
+const animeReady = import('https://cdn.jsdelivr.net/npm/animejs@4.0.0/+esm')
+  .then(mod => ({
+    anime: mod.default || mod.anime,
+    createDraggable: mod.createDraggable,
+    utils: mod.utils
+  }))
+  .catch(() => null);
+
 let currentSpread = null;
 let drawnCards = [];
 let selectedCardIndex = null;
@@ -88,6 +96,10 @@ function renderSpread(spreadType) {
     slot.appendChild(card);
     area.appendChild(slot);
   });
+
+  animeReady.then(deps => {
+    if (deps) initDraggableCards(deps);
+  });
 }
 
 function createCardElement(cardData, index) {
@@ -116,6 +128,10 @@ function createCardElement(cardData, index) {
   `;
 
   wrapper.addEventListener('click', () => {
+    if (wrapper.dataset.wasDragged === 'true') {
+      wrapper.dataset.wasDragged = 'false';
+      return;
+    }
     if (!wrapper.classList.contains('flipped') && !wrapper.classList.contains('reversed')) {
       if (cardData.isReversed) {
         wrapper.classList.add('reversed');
@@ -170,6 +186,72 @@ function shuffleAndRedraw() {
 function backToSpreads() {
   document.getElementById('reading-section').classList.add('hidden');
   document.getElementById('stese').scrollIntoView({ behavior: 'smooth' });
+}
+
+// === DRAGGABLE CARDS (anime.js v4) ===
+function initDraggableCards({ anime, createDraggable, utils }) {
+  utils.set('.tarot-card', { z: 100 });
+
+  document.querySelectorAll('.tarot-card').forEach(card => {
+    if (card.classList.contains('flipped') || card.classList.contains('reversed')) return;
+    if (card.dataset.draggableInit) return;
+    card.dataset.draggableInit = 'true';
+
+    const inner = card.querySelector('.tarot-card-inner');
+    if (!inner) return;
+
+    createDraggable(inner, {
+      x: { mapTo: 'rotateY' },
+      y: { mapTo: 'z' }
+    });
+
+    let startX = 0;
+    let dragged = false;
+
+    card.addEventListener('pointerdown', (e) => {
+      startX = e.clientX;
+      dragged = false;
+      card.classList.add('dragging');
+    });
+
+    card.addEventListener('pointermove', (e) => {
+      if (Math.abs(e.clientX - startX) > 5) dragged = true;
+    });
+
+    card.addEventListener('pointerup', () => {
+      card.classList.remove('dragging');
+      if (!dragged) return;
+      if (card.classList.contains('flipped') || card.classList.contains('reversed')) return;
+
+      const transform = inner.style.transform || '';
+      const match = transform.match(/rotateY\(([^)]+)deg\)/);
+      const currentRotation = match ? parseFloat(match[1]) : 0;
+
+      const snapTo = Math.abs(currentRotation % 360) > 90 ? 180 : 0;
+
+      if (snapTo === 180) {
+        card.dataset.wasDragged = 'true';
+      }
+
+      anime({
+        targets: inner,
+        rotateY: snapTo,
+        duration: 600,
+        easing: 'easeOutCubic',
+        complete: () => {
+          if (snapTo === 180) {
+            const index = parseInt(card.dataset.index);
+            if (drawnCards[index]?.isReversed) {
+              card.classList.add('reversed');
+            } else {
+              card.classList.add('flipped');
+            }
+            selectCard(index);
+          }
+        }
+      });
+    });
+  });
 }
 
 // === DECK BROWSER ===
@@ -292,3 +374,136 @@ document.addEventListener('keydown', (e) => {
 
 // === INIT DECK ===
 showDeck('major');
+
+// === FAN / VENTAGLIO DI CARTE ===
+function buildFanCard(cardData) {
+  const card = document.createElement('div');
+  card.className = 'tarot-card fan-card';
+
+  const imgHtml = cardData.image
+    ? `<img class="card-image" src="${cardData.image}" alt="${cardData.name}" loading="lazy">`
+    : `<div class="card-symbol">${cardData.symbol}</div>`;
+
+  card.innerHTML = `
+    <div class="tarot-card-inner">
+      <div class="card-face card-back">
+        <div class="card-back-pattern">
+          <i class="fas fa-star"></i>
+        </div>
+      </div>
+      <div class="card-face card-front">
+        ${imgHtml}
+        <div class="card-name">${cardData.name}</div>
+        <span class="card-upright-tag">Dritta</span>
+        <span class="card-reversed-tag">Invertita</span>
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+function drawFan() {
+  const container = document.getElementById('fan-container');
+  if (!container) return;
+
+  const result = document.getElementById('fan-result');
+  if (result) result.classList.add('hidden');
+
+  container.classList.remove('has-revealed');
+  container.innerHTML = '';
+
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  const cx = W / 2;
+  const cy = H * 0.7;
+  const R = Math.max(160, Math.min(H * 0.62, W * 0.5));
+  const arcDeg = 140;
+
+  const cards = shuffleDeck(getAllCards());
+  const N = cards.length;
+
+  cards.forEach((cardData, i) => {
+    const card = buildFanCard(cardData);
+    container.appendChild(card);
+
+    const theta = (-arcDeg / 2 + (arcDeg * i) / (N - 1)) * (Math.PI / 180);
+    const x = cx + R * Math.sin(theta);
+    const y = cy - R * Math.cos(theta);
+
+    card.style.left = (x - card.offsetWidth / 2) + 'px';
+    card.style.top = (y - card.offsetHeight / 2) + 'px';
+    card.style.transform = `rotate(${theta * (180 / Math.PI)}deg)`;
+    card.style.zIndex = i + 1;
+
+    card.dataset.x = x;
+    card.dataset.y = y;
+    card.dataset.theta = theta * (180 / Math.PI);
+
+    card.addEventListener('click', () => revealFanCard(card, cardData));
+  });
+}
+
+function revealFanCard(card, cardData) {
+  if (card.classList.contains('flipped') || card.classList.contains('reversed')) return;
+
+  const container = card.parentElement;
+  container.classList.add('has-revealed');
+
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  const cx = W / 2;
+  const cy = H * 0.7;
+  const thetaDeg = parseFloat(card.dataset.theta) || 0;
+
+  card.classList.add('revealed');
+  if (cardData.isReversed) {
+    card.classList.add('reversed');
+  } else {
+    card.classList.add('flipped');
+  }
+
+  card.style.left = (cx - card.offsetWidth / 2) + 'px';
+  card.style.top = (cy - card.offsetHeight / 2) + 'px';
+  card.style.transform = `scale(2.1) rotate(${-thetaDeg}deg)`;
+  card.style.zIndex = 999;
+
+  showFanResult(cardData);
+}
+
+function showFanResult(cardData) {
+  const result = document.getElementById('fan-result');
+  if (!result) return;
+
+  document.getElementById('fan-result-name').textContent = cardData.name;
+
+  const badge = document.getElementById('fan-result-badge');
+  badge.textContent = cardData.isReversed ? 'Invertita' : 'Dritta';
+  badge.className = 'interp-badge' + (cardData.isReversed ? ' reversed' : '');
+
+  const meaning = cardData.isReversed ? cardData.reversedMeaning : cardData.uprightMeaning;
+  document.getElementById('fan-result-meaning').textContent = meaning;
+
+  const keywords = cardData.isReversed ? cardData.reversedKeywords : cardData.uprightKeywords;
+  document.getElementById('fan-result-keywords').innerHTML =
+    keywords.map(k => `<span class="interp-keyword">${k}</span>`).join('');
+
+  document.getElementById('fan-result-advice').textContent = cardData.advice;
+
+  result.classList.remove('hidden');
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetFan() {
+  drawFan();
+}
+
+drawFan();
+
+window.addEventListener('resize', () => {
+  const container = document.getElementById('fan-container');
+  if (!container) return;
+  if (!container.querySelector('.fan-card.revealed')) {
+    drawFan();
+  }
+});
