@@ -287,7 +287,7 @@ body {
 
 .studio-layout {
   display: grid;
-  grid-template-columns: 1fr 20rem;
+  grid-template-columns: minmax(0, 1fr) 20rem;
   gap: 1.25rem;
   padding: 1rem 1.5rem 0;
   min-height: calc(100vh - 3.5rem);
@@ -297,6 +297,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   background: var(--panel);
   border-radius: 1rem;
   overflow: hidden;

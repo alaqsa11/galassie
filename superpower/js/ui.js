@@ -55,6 +55,9 @@ window.AuraUI = {
     const textWeight = document.getElementById('ctrl-text-weight');
     const textAlign = document.getElementById('ctrl-text-align');
     const textColor = document.getElementById('ctrl-text-color');
+    const download = document.getElementById('btn-download');
+    const copyPalette = document.getElementById('btn-copy-palette');
+    const copyLink = document.getElementById('btn-copy-link');
     const formats = AuraPresets.formats[current.category === 'social' ? 'social' : 'sfondi'];
 
     const setOutput = (id, value) => {
@@ -183,6 +186,29 @@ window.AuraUI = {
       emit(AuraEngine.randomize(current));
       generate.querySelector('span').textContent = 'Rigenera';
       syncAll();
+    });
+    listen(download, 'click', () => {
+      AuraExport.downloadPng(
+        document.getElementById('preview-canvas'),
+        `aura-${current.width}x${current.height}.png`
+      );
+      this.toast('PNG scaricato');
+    });
+    listen(copyPalette, 'click', async () => {
+      try {
+        await AuraExport.copyPalette(current);
+        this.toast('Palette copiata');
+      } catch (error) {
+        this.toast('Copia non disponibile in questo contesto');
+      }
+    });
+    listen(copyLink, 'click', async () => {
+      try {
+        await AuraExport.copyLink(current);
+        this.toast('Link copiato');
+      } catch (error) {
+        this.toast('Copia non disponibile in questo contesto');
+      }
     });
     listen(type, 'change', () => {
       emit({ ...current, gradientType: type.value });
@@ -335,13 +361,13 @@ window.AuraUI = {
       copyBtn.type = 'button';
       copyBtn.className = 'inspiration-btn';
       copyBtn.textContent = 'Copia palette';
-      listen(copyBtn, 'click', () => {
-        const s = AuraState.clamp(item.state);
-        const hex = s.stops.map((st) => st.color).join(', ');
-        navigator.clipboard.writeText(hex).then(
-          () => AuraUI.toast('Palette copiata'),
-          () => AuraUI.toast('Impossibile copiare la palette')
-        );
+      listen(copyBtn, 'click', async () => {
+        try {
+          await AuraExport.copyPalette(item.state);
+          AuraUI.toast('Palette copiata');
+        } catch (error) {
+          AuraUI.toast('Copia non disponibile in questo contesto');
+        }
       });
 
       actions.append(useBtn, copyBtn);
