@@ -6,6 +6,11 @@ window.AuraUI = {
       const on = el.id === 'view-' + name;
       el.classList.toggle('hidden', !on);
       el.hidden = !on;
+      if (on) {
+        el.classList.remove('view-enter');
+        void el.offsetWidth;
+        el.classList.add('view-enter');
+      }
     });
   },
   toast(msg) {
@@ -183,6 +188,9 @@ window.AuraUI = {
     format.appendChild(customOption);
 
     listen(generate, 'click', () => {
+      generate.classList.remove('is-pulsing');
+      void generate.offsetWidth;
+      generate.classList.add('is-pulsing');
       emit(AuraEngine.randomize(current));
       generate.querySelector('span').textContent = 'Rigenera';
       syncAll();
