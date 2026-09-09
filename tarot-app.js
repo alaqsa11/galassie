@@ -422,7 +422,8 @@ function drawFan() {
   const arcDeg = 110 + Math.random() * 60;
   const arcRad = arcDeg * Math.PI / 180;
   const offsetY = cardH / 2;
-  const R = (H - cardH - offsetY) / (1 - Math.cos(arcRad / 2));
+  const R_outer = (H - cardH - offsetY) / (1 - Math.cos(arcRad / 2));
+  const R_inner  = R_outer * 0.80;
 
   container.dataset.pivotX = cx;
   container.dataset.pivotY = 0;
@@ -439,8 +440,8 @@ function drawFan() {
     const groupIndex = isOuter ? Math.floor(i / 2) : Math.floor((i - 1) / 2);
     const t = groupCount > 1 ? groupIndex / (groupCount - 1) : 0.5;
     const theta = -arcRad / 2 + arcRad * t;
-    const x = cx + R * Math.sin(theta);
-    const y = offsetY + R * (1 - Math.cos(theta));
+    const x = cx + (isOuter ? R_outer : R_inner) * Math.sin(theta);
+    const y = offsetY + (isOuter ? R_outer : R_inner) * (1 - Math.cos(theta));
     const rotDeg = theta * 180 / Math.PI;
 
     card.style.left = (x - cardW / 2) + 'px';
