@@ -47,6 +47,14 @@ window.AuraUI = {
     const format = document.getElementById('ctrl-format');
     const width = document.getElementById('ctrl-width');
     const height = document.getElementById('ctrl-height');
+    const textControls = document.getElementById('text-controls');
+    const textContent = document.getElementById('ctrl-text-content');
+    const textX = document.getElementById('ctrl-text-x');
+    const textY = document.getElementById('ctrl-text-y');
+    const textSize = document.getElementById('ctrl-text-size');
+    const textWeight = document.getElementById('ctrl-text-weight');
+    const textAlign = document.getElementById('ctrl-text-align');
+    const textColor = document.getElementById('ctrl-text-color');
     const formats = AuraPresets.formats[current.category === 'social' ? 'social' : 'sfondi'];
 
     const setOutput = (id, value) => {
@@ -85,6 +93,25 @@ window.AuraUI = {
       format.value = match ? match.id : 'custom';
       width.value = current.width;
       height.value = current.height;
+    };
+    const syncText = () => {
+      const isSocial = current.category === 'social';
+      textControls.classList.toggle('hidden', !isSocial);
+      textControls.hidden = !isSocial;
+      if (!isSocial || !current.text) return;
+      textContent.value = current.text.content;
+      textX.value = Math.round(current.text.x * 100);
+      textY.value = Math.round(current.text.y * 100);
+      textSize.value = current.text.size;
+      textWeight.value = String(current.text.weight);
+      textAlign.value = current.text.align;
+      textColor.value = current.text.color;
+      setOutput('ctrl-text-x-value', Math.round(current.text.x * 100) + '%');
+      setOutput('ctrl-text-y-value', Math.round(current.text.y * 100) + '%');
+    };
+    const updateText = (patch) => {
+      if (current.category !== 'social' || !current.text) return;
+      emit({ ...current, text: { ...current.text, ...patch } });
     };
     const renderStops = () => {
       stopsList.replaceChildren();
@@ -137,6 +164,7 @@ window.AuraUI = {
       syncGradient();
       syncOverlays();
       syncFormat();
+      syncText();
       renderStops();
     };
 
@@ -233,6 +261,24 @@ window.AuraUI = {
     };
     listen(width, 'change', updateDimensions);
     listen(height, 'change', updateDimensions);
+
+    listen(textContent, 'input', () => updateText({ content: textContent.value }));
+    listen(textX, 'input', () => {
+      setOutput('ctrl-text-x-value', textX.value + '%');
+      updateText({ x: Number(textX.value) / 100 });
+    });
+    listen(textY, 'input', () => {
+      setOutput('ctrl-text-y-value', textY.value + '%');
+      updateText({ y: Number(textY.value) / 100 });
+    });
+    listen(textSize, 'change', () => {
+      const size = Math.min(200, Math.max(12, Number(textSize.value) || 64));
+      textSize.value = size;
+      updateText({ size });
+    });
+    listen(textWeight, 'change', () => updateText({ weight: Number(textWeight.value) }));
+    listen(textAlign, 'change', () => updateText({ align: textAlign.value }));
+    listen(textColor, 'input', () => updateText({ color: textColor.value }));
 
     generate.querySelector('span').textContent = 'Genera';
     syncAll();

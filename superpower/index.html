@@ -136,8 +136,47 @@
             </div>
           </section>
 
-          <section id="text-controls" class="control-section hidden" hidden aria-label="Controlli testo">
-            <h3>Testo</h3>
+          <section id="text-controls" class="control-section hidden" hidden aria-labelledby="text-controls-title">
+            <h3 id="text-controls-title">Testo</h3>
+            <label class="control-field">
+              <span>Contenuto</span>
+              <textarea id="ctrl-text-content" rows="3" placeholder="Il tuo messaggio"></textarea>
+            </label>
+            <div class="center-controls">
+              <label class="control-field">
+                <span>Posizione X <output id="ctrl-text-x-value">50%</output></span>
+                <input id="ctrl-text-x" type="range" min="0" max="100" step="1" value="50">
+              </label>
+              <label class="control-field">
+                <span>Posizione Y <output id="ctrl-text-y-value">50%</output></span>
+                <input id="ctrl-text-y" type="range" min="0" max="100" step="1" value="50">
+              </label>
+            </div>
+            <label class="control-field">
+              <span>Dimensione (px)</span>
+              <input id="ctrl-text-size" type="number" min="12" max="200" step="1" value="64">
+            </label>
+            <label class="control-field">
+              <span>Peso</span>
+              <select id="ctrl-text-weight">
+                <option value="400">Regular (400)</option>
+                <option value="600">Semibold (600)</option>
+                <option value="700" selected>Bold (700)</option>
+                <option value="800">Extra bold (800)</option>
+              </select>
+            </label>
+            <label class="control-field">
+              <span>Allineamento</span>
+              <select id="ctrl-text-align">
+                <option value="left">Sinistra</option>
+                <option value="center" selected>Centro</option>
+                <option value="right">Destra</option>
+              </select>
+            </label>
+            <label class="control-field color-control">
+              <span>Colore</span>
+              <input id="ctrl-text-color" type="color" value="#ffffff">
+            </label>
           </section>
         </aside>
       </div>
