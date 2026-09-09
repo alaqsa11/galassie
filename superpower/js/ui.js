@@ -63,15 +63,52 @@ window.AuraUI = {
     const download = document.getElementById('btn-download');
     const copyPalette = document.getElementById('btn-copy-palette');
     const copyLink = document.getElementById('btn-copy-link');
+    const gradientBar = document.getElementById('gradient-stop-bar');
     const formats = AuraPresets.formats[current.category === 'social' ? 'social' : 'sfondi'];
 
     const setOutput = (id, value) => {
       document.getElementById(id).value = value;
     };
+    const syncStopRow = (index, stop) => {
+      const row = stopsList.children[index];
+      if (!row) return;
+      const colorInput = row.querySelector('input[type="color"]');
+      const colorLabel = row.querySelector('.color-control span');
+      const positionInput = row.querySelector('input[type="range"]');
+      const positionOutput = row.querySelector('output');
+      if (colorInput) colorInput.value = stop.color;
+      if (colorLabel) colorLabel.textContent = stop.color.toUpperCase();
+      if (positionInput) positionInput.value = Math.round(stop.pos * 100);
+      if (positionOutput) positionOutput.value = Math.round(stop.pos * 100) + '%';
+    };
+    const paintGradientBar = () => {
+      if (!gradientBar) return;
+      const barStops = current.stops
+        .slice()
+        .sort((a, b) => a.pos - b.pos)
+        .map((st) => st.color + ' ' + (st.pos * 100) + '%')
+        .join(', ');
+      gradientBar.style.backgroundImage = 'linear-gradient(90deg, ' + barStops + ')';
+      const handles = gradientBar.querySelectorAll('.gradient-stop-handle');
+      if (handles.length !== current.stops.length) return;
+      current.stops.forEach((stop, index) => {
+        handles[index].style.left = (stop.pos * 100) + '%';
+        handles[index].style.backgroundColor = stop.color;
+        handles[index].setAttribute(
+          'aria-valuenow',
+          String(Math.round(stop.pos * 100))
+        );
+        handles[index].setAttribute(
+          'aria-label',
+          'Posizione colore ' + (index + 1) + ': ' + Math.round(stop.pos * 100) + '%'
+        );
+      });
+    };
     const emit = (next) => {
       current = AuraState.clamp(next);
       onChange(current);
       this.renderPreview(current);
+      paintGradientBar();
     };
     const matchingFormat = () => formats.find((item) => (
       item.width === current.width && item.height === current.height
@@ -121,6 +158,67 @@ window.AuraUI = {
       if (current.category !== 'social' || !current.text) return;
       emit({ ...current, text: { ...current.text, ...patch } });
     };
+    const buildGradientBar = () => {
+      if (!gradientBar) return;
+      gradientBar.replaceChildren();
+      current.stops.forEach((stop, index) => {
+        const handle = document.createElement('button');
+        handle.type = 'button';
+        handle.className = 'gradient-stop-handle';
+        handle.style.left = (stop.pos * 100) + '%';
+        handle.style.backgroundColor = stop.color;
+        handle.setAttribute('role', 'slider');
+        handle.setAttribute('aria-valuemin', '0');
+        handle.setAttribute('aria-valuemax', '100');
+        handle.setAttribute('aria-valuenow', String(Math.round(stop.pos * 100)));
+        handle.setAttribute(
+          'aria-label',
+          'Posizione colore ' + (index + 1) + ': ' + Math.round(stop.pos * 100) + '%'
+        );
+        listen(handle, 'pointerdown', (event) => {
+          event.preventDefault();
+          handle.classList.add('is-dragging');
+          handle.setPointerCapture(event.pointerId);
+          const move = (ev) => {
+            const rect = gradientBar.getBoundingClientRect();
+            if (!rect.width) return;
+            const pos = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
+            const stops = current.stops.map((item, i) => (
+              i === index ? { color: item.color, pos } : item
+            ));
+            emit({ ...current, stops });
+            syncStopRow(index, current.stops[index]);
+          };
+          const end = (ev) => {
+            handle.classList.remove('is-dragging');
+            if (handle.hasPointerCapture(ev.pointerId)) {
+              handle.releasePointerCapture(ev.pointerId);
+            }
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', end);
+            handle.removeEventListener('pointercancel', end);
+          };
+          handle.addEventListener('pointermove', move);
+          handle.addEventListener('pointerup', end);
+          handle.addEventListener('pointercancel', end);
+        });
+        listen(handle, 'keydown', (event) => {
+          let delta = 0;
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') delta = -0.01;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowUp') delta = 0.01;
+          if (!delta) return;
+          event.preventDefault();
+          const pos = Math.min(1, Math.max(0, current.stops[index].pos + delta));
+          const stops = current.stops.map((item, i) => (
+            i === index ? { color: item.color, pos } : item
+          ));
+          emit({ ...current, stops });
+          syncStopRow(index, current.stops[index]);
+        });
+        gradientBar.appendChild(handle);
+      });
+      paintGradientBar();
+    };
     const renderStops = () => {
       stopsList.replaceChildren();
       current.stops.forEach((stop, index) => {
@@ -131,9 +229,9 @@ window.AuraUI = {
             <input type="color" value="${stop.color}">
             <span>${stop.color.toUpperCase()}</span>
           </label>
-          <label class="stop-position" aria-label="Posizione colore ${index + 1}">
-            <input type="range" min="0" max="100" step="1" value="${Math.round(stop.pos * 100)}">
-            <output>${Math.round(stop.pos * 100)}%</output>
+          <label class="stop-position">
+            <span>Posizione <output>${Math.round(stop.pos * 100)}%</output></span>
+            <input type="range" min="0" max="100" step="1" value="${Math.round(stop.pos * 100)}" aria-label="Posizione colore ${index + 1}">
           </label>
           <button type="button" class="remove-stop" aria-label="Rimuovi colore ${index + 1}" ${current.stops.length <= 2 ? 'disabled' : ''}>
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -167,6 +265,7 @@ window.AuraUI = {
         stopsList.appendChild(row);
       });
       addStop.disabled = current.stops.length >= 5;
+      buildGradientBar();
     };
     const syncAll = () => {
       syncGradient();
