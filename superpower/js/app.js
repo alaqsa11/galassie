@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cat = btn.dataset.category;
       if (cat === 'ispirazione') {
         AuraUI.showView('inspiration');
+        AuraUI.renderInspirationGrid(AuraPresets.inspiration);
         return;
       }
       window.__auraState = AuraState.createDefault(cat);

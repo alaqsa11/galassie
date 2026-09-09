@@ -282,5 +282,72 @@ window.AuraUI = {
 
     generate.querySelector('span').textContent = 'Genera';
     syncAll();
+  },
+  renderInspirationGrid(items) {
+    const grid = document.getElementById('inspiration-grid');
+    if (!grid || !Array.isArray(items)) return;
+
+    if (window.__auraInspirationAbort) window.__auraInspirationAbort.abort();
+    const controller = new AbortController();
+    window.__auraInspirationAbort = controller;
+    const listen = (element, event, handler) => {
+      element.addEventListener(event, handler, { signal: controller.signal });
+    };
+
+    grid.replaceChildren();
+    items.forEach((item) => {
+      const card = document.createElement('article');
+      card.className = 'inspiration-card';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'inspiration-thumb';
+      thumb.style.backgroundImage = AuraEngine.cssGradient(item.state);
+      const ratio = item.state.width / item.state.height;
+      thumb.style.aspectRatio = ratio > 0 ? String(ratio) : '16 / 9';
+
+      const body = document.createElement('div');
+      body.className = 'inspiration-card-body';
+
+      const label = document.createElement('h3');
+      label.className = 'inspiration-label';
+      label.textContent = item.label;
+
+      const actions = document.createElement('div');
+      actions.className = 'inspiration-actions';
+
+      const useBtn = document.createElement('button');
+      useBtn.type = 'button';
+      useBtn.className = 'inspiration-btn inspiration-btn-primary';
+      useBtn.textContent = 'Usa in studio';
+      listen(useBtn, 'click', () => {
+        window.__auraState = AuraState.clamp({
+          ...item.state,
+          category: item.state.category || 'ispirazione'
+        });
+        AuraUI.showView('studio');
+        AuraUI.mountControls(window.__auraState, (nextState) => {
+          window.__auraState = nextState;
+        });
+        AuraUI.renderPreview(window.__auraState);
+      });
+
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.className = 'inspiration-btn';
+      copyBtn.textContent = 'Copia palette';
+      listen(copyBtn, 'click', () => {
+        const s = AuraState.clamp(item.state);
+        const hex = s.stops.map((st) => st.color).join(', ');
+        navigator.clipboard.writeText(hex).then(
+          () => AuraUI.toast('Palette copiata'),
+          () => AuraUI.toast('Impossibile copiare la palette')
+        );
+      });
+
+      actions.append(useBtn, copyBtn);
+      body.append(label, actions);
+      card.append(thumb, body);
+      grid.appendChild(card);
+    });
   }
 };

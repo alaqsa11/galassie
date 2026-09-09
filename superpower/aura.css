@@ -205,9 +205,80 @@ body {
 
 .inspiration-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1.25rem;
   min-height: 8rem;
+}
+
+.inspiration-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.inspiration-card:hover {
+  border-color: rgba(107, 255, 211, 0.35);
+  transform: translateY(-3px);
+}
+
+.inspiration-thumb {
+  width: 100%;
+  min-height: 5rem;
+  background-size: cover;
+  background-position: center;
+}
+
+.inspiration-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.inspiration-label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.inspiration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inspiration-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.inspiration-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.inspiration-btn-primary {
+  border-color: rgba(255, 107, 203, 0.35);
+  background: rgba(255, 107, 203, 0.12);
+  color: var(--accent-a);
+}
+
+.inspiration-btn-primary:hover {
+  background: rgba(255, 107, 203, 0.22);
 }
 
 .view-studio {
