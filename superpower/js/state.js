@@ -40,8 +40,10 @@ window.AuraState = {
     s.width = width;
     s.height = height;
     s.angle = ((Number(s.angle) || 0) % 360 + 360) % 360;
-    s.cx = Math.min(1, Math.max(0, Number(s.cx) || 0.5));
-    s.cy = Math.min(1, Math.max(0, Number(s.cy) || 0.5));
+    const cx = Number(s.cx);
+    const cy = Number(s.cy);
+    s.cx = Math.min(1, Math.max(0, Number.isFinite(cx) ? cx : 0.5));
+    s.cy = Math.min(1, Math.max(0, Number.isFinite(cy) ? cy : 0.5));
     if (!['linear', 'radial', 'conic'].includes(s.gradientType)) s.gradientType = 'linear';
     if (!Array.isArray(s.stops) || s.stops.length < 2) {
       s.stops = [

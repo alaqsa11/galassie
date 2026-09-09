@@ -50,7 +50,95 @@
           <canvas id="preview-canvas" width="1280" height="720"></canvas>
         </div>
         <aside id="controls-panel" class="controls-panel">
-          <!-- controlli nelle task successive -->
+          <div class="controls-heading">
+            <div>
+              <p class="controls-kicker">Studio Aura</p>
+              <h2>Personalizza</h2>
+            </div>
+            <button type="button" id="btn-generate" class="generate-btn">
+              <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+              <span>Genera</span>
+            </button>
+          </div>
+
+          <section class="control-section" aria-labelledby="gradient-controls-title">
+            <h3 id="gradient-controls-title">Gradiente</h3>
+            <label class="control-field">
+              <span>Tipo</span>
+              <select id="ctrl-type">
+                <option value="linear">Lineare</option>
+                <option value="radial">Radiale</option>
+                <option value="conic">Conico</option>
+              </select>
+            </label>
+            <label class="control-field">
+              <span>Angolo <output id="ctrl-angle-value">135°</output></span>
+              <input id="ctrl-angle" type="range" min="0" max="360" step="1" value="135">
+            </label>
+            <div id="center-controls" class="center-controls hidden">
+              <label class="control-field">
+                <span>Centro X <output id="ctrl-cx-value">50%</output></span>
+                <input id="ctrl-cx" type="range" min="0" max="100" step="1" value="50">
+              </label>
+              <label class="control-field">
+                <span>Centro Y <output id="ctrl-cy-value">50%</output></span>
+                <input id="ctrl-cy" type="range" min="0" max="100" step="1" value="50">
+              </label>
+            </div>
+          </section>
+
+          <section class="control-section" aria-labelledby="colors-controls-title">
+            <div class="section-heading">
+              <h3 id="colors-controls-title">Colori</h3>
+              <button type="button" id="btn-add-stop" class="small-btn">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Aggiungi
+              </button>
+            </div>
+            <div id="stops-list" class="stops-list"></div>
+          </section>
+
+          <section class="control-section" aria-labelledby="overlay-controls-title">
+            <h3 id="overlay-controls-title">Overlay</h3>
+            <label class="control-field">
+              <span>Forme <output id="ctrl-blobs-value">3</output></span>
+              <input id="ctrl-blobs" type="range" min="0" max="6" step="1" value="3">
+            </label>
+            <label class="control-field">
+              <span>Intensita <output id="ctrl-intensity-value">45%</output></span>
+              <input id="ctrl-intensity" type="range" min="0" max="100" step="1" value="45">
+            </label>
+            <label class="control-field">
+              <span>Vignettatura <output id="ctrl-vignette-value">30%</output></span>
+              <input id="ctrl-vignette" type="range" min="0" max="100" step="1" value="30">
+            </label>
+            <label class="control-field">
+              <span>Disposizione <output id="ctrl-layout-value">35%</output></span>
+              <input id="ctrl-layout" type="range" min="0" max="100" step="1" value="35">
+            </label>
+          </section>
+
+          <section class="control-section" aria-labelledby="format-controls-title">
+            <h3 id="format-controls-title">Formato</h3>
+            <label class="control-field">
+              <span>Preset</span>
+              <select id="ctrl-format"></select>
+            </label>
+            <div class="dimensions-grid">
+              <label class="control-field">
+                <span>Larghezza</span>
+                <input id="ctrl-width" type="number" min="64" max="4096" step="1">
+              </label>
+              <label class="control-field">
+                <span>Altezza</span>
+                <input id="ctrl-height" type="number" min="64" max="4096" step="1">
+              </label>
+            </div>
+          </section>
+
+          <section id="text-controls" class="control-section hidden" hidden aria-label="Controlli testo">
+            <h3>Testo</h3>
+          </section>
         </aside>
       </div>
     </section>

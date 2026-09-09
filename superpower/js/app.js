@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.__auraState = AuraState.createDefault(cat);
       AuraUI.showView('studio');
       AuraUI.renderPreview(window.__auraState);
+      AuraUI.mountControls(window.__auraState, (nextState) => {
+        window.__auraState = nextState;
+      });
     });
   });
   document.querySelectorAll('[data-nav="home"]').forEach((btn) => {
