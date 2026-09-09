@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura — Grafiche a gradienti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="aura.css">
+</head>
+<body>
+  <div id="app" data-view="home">
+    <section id="view-home" class="view view-home">
+      <div class="home-bg" aria-hidden="true"></div>
+      <header class="home-hero">
+        <p class="brand">Aura</p>
+        <h1>Grafiche a gradienti, in un click</h1>
+        <p class="tagline">Sfondi, social e ispirazioni — genera, ritocca, scarica.</p>
+      </header>
+      <div class="category-doors">
+        <button type="button" class="door" data-category="sfondi">
+          <i class="fa-solid fa-panorama"></i>
+          <span>Sfondi</span>
+          <small>Wallpaper e sfondi full-bleed</small>
+        </button>
+        <button type="button" class="door" data-category="social">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Social</span>
+          <small>Post e storie con testo</small>
+        </button>
+        <button type="button" class="door" data-category="ispirazione">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Ispirazione</span>
+          <small>Mood e palette da esplorare</small>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-inspiration" class="view view-inspiration hidden" hidden>
+      <button type="button" class="back-btn" data-nav="home">Indietro</button>
+      <h2>Ispirazione</h2>
+      <div id="inspiration-grid" class="inspiration-grid"></div>
+    </section>
+
+    <section id="view-studio" class="view view-studio hidden" hidden>
+      <button type="button" class="back-btn" data-nav="home">Indietro</button>
+      <div class="studio-layout">
+        <div class="preview-wrap">
+          <canvas id="preview-canvas" width="1280" height="720"></canvas>
+        </div>
+        <aside id="controls-panel" class="controls-panel">
+          <!-- controlli nelle task successive -->
+        </aside>
+      </div>
+    </section>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="js/presets.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/gradient-engine.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
