@@ -259,8 +259,9 @@ let currentDeckType = 'major';
 
 function showDeck(type) {
   currentDeckType = type;
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  const btns = [...document.querySelectorAll('.tab-btn')];
+  const idx = { major: 0, wands: 1, cups: 2, swords: 3, pentacles: 4 };
+  btns.forEach((btn, i) => btn.classList.toggle('active', i === idx[type]));
 
   const grid = document.getElementById('deck-grid');
   grid.innerHTML = '';
@@ -416,12 +417,15 @@ function drawFan() {
   const W = container.clientWidth;
   const H = container.clientHeight;
   const cx = W / 2;
-  const cy = H * (0.6 + Math.random() * 0.2);
-  const R = Math.max(160, Math.min(H * (0.55 + Math.random() * 0.2), W * (0.5 + Math.random() * 0.12)));
+  const cardW = 76;
+  const cardH = 118;
   const arcDeg = 110 + Math.random() * 60;
+  const arcRad = arcDeg * Math.PI / 180;
+  const offsetY = cardH / 2;
+  const R = (H - cardH - offsetY) / (1 - Math.cos(arcRad / 2));
 
   container.dataset.pivotX = cx;
-  container.dataset.pivotY = cy;
+  container.dataset.pivotY = 0;
 
   const cards = shuffleDeck(getAllCards());
   const N = cards.length;
@@ -430,23 +434,23 @@ function drawFan() {
     const card = buildFanCard(cardData);
     container.appendChild(card);
 
-    const t = i / (N - 1);
-    const baseAngle = (-arcDeg / 2 + arcDeg * t) * (Math.PI / 180);
-    const jitter = (Math.random() - 0.5) * 12 * (Math.PI / 180);
-    const angle = baseAngle + jitter;
-    const rad = R * (0.85 + Math.random() * 0.35);
-    const x = cx + rad * Math.sin(angle);
-    const y = cy - rad * Math.cos(angle);
-    const rotateDeg = angle * (180 / Math.PI) + (Math.random() - 0.5) * 16;
+    const isOuter = i % 2 === 0;
+    const groupCount = isOuter ? Math.ceil(N / 2) : Math.floor(N / 2);
+    const groupIndex = isOuter ? Math.floor(i / 2) : Math.floor((i - 1) / 2);
+    const t = groupCount > 1 ? groupIndex / (groupCount - 1) : 0.5;
+    const theta = -arcRad / 2 + arcRad * t;
+    const x = cx + R * Math.sin(theta);
+    const y = offsetY + R * (1 - Math.cos(theta));
+    const rotDeg = theta * 180 / Math.PI;
 
-    card.style.left = (x - card.offsetWidth / 2) + 'px';
-    card.style.top = (y - card.offsetHeight / 2) + 'px';
-    card.style.transform = `rotate(${rotateDeg}deg)`;
-    card.style.zIndex = Math.floor(Math.random() * 500) + 1;
+    card.style.left = (x - cardW / 2) + 'px';
+    card.style.top = (y - cardH / 2) + 'px';
+    card.style.transform = `rotate(${rotDeg}deg)`;
+    card.style.zIndex = isOuter ? groupIndex + 1 : groupIndex + 1000;
 
-    card.dataset.x = x;
-    card.dataset.y = y;
-    card.dataset.theta = rotateDeg;
+    card.dataset.origLeft = (x - cardW / 2) + 'px';
+    card.dataset.origTop = (y - cardH / 2) + 'px';
+    card.dataset.theta = rotDeg;
 
     card.addEventListener('click', () => revealFanCard(card, cardData));
   });
@@ -460,23 +464,23 @@ function revealFanCard(card, cardData) {
 
   const W = container.clientWidth;
   const H = container.clientHeight;
-  const cx = parseFloat(container.dataset.pivotX) || W / 2;
-  const cy = parseFloat(container.dataset.pivotY) || H / 2;
-  const thetaDeg = parseFloat(card.dataset.theta) || 0;
 
   card.classList.add('revealed');
-  if (cardData.isReversed) {
-    card.classList.add('reversed');
-  } else {
-    card.classList.add('flipped');
-  }
 
-  card.style.left = (cx - card.offsetWidth / 2) + 'px';
-  card.style.top = (cy - card.offsetHeight / 2) + 'px';
-  card.style.transform = `scale(2.1) rotate(${-thetaDeg}deg)`;
+  card.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), left 1.2s cubic-bezier(0.4, 0, 0.2, 1), top 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+  card.style.left = (W / 2 - card.offsetWidth / 2) + 'px';
+  card.style.top = (H / 2 - card.offsetHeight / 2) + 'px';
+  card.style.transform = 'rotateY(720deg) scale(1.1)';
   card.style.zIndex = 999;
 
-  showFanResult(cardData);
+  setTimeout(() => {
+    if (cardData.isReversed) {
+      card.classList.add('reversed');
+    } else {
+      card.classList.add('flipped');
+    }
+    showFanResult(cardData);
+  }, 1200);
 }
 
 function showFanResult(cardData) {
