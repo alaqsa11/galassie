@@ -27,7 +27,10 @@ window.AuraEngine = {
 
   cssGradient(state) {
     const s = AuraState.clamp(state);
-    const stops = s.stops.map((st) => st.color + ' ' + (st.pos * 100) + '%').join(', ');
+    const stops = s.stops.slice()
+      .sort((a, b) => a.pos - b.pos)
+      .map((st) => st.color + ' ' + (st.pos * 100) + '%')
+      .join(', ');
     if (s.gradientType === 'radial') {
       return `radial-gradient(circle at ${s.cx * 100}% ${s.cy * 100}%, ${stops})`;
     }
@@ -58,7 +61,7 @@ window.AuraEngine = {
     } else if (s.gradientType === 'conic' && typeof ctx.createConicGradient === 'function') {
       g = ctx.createConicGradient(s.angle * Math.PI / 180, s.cx * s.width, s.cy * s.height);
     } else {
-      const rad = s.angle * Math.PI / 180;
+      const rad = (s.angle - 90) * Math.PI / 180;
       const x0 = s.width / 2 - Math.cos(rad) * s.width;
       const y0 = s.height / 2 - Math.sin(rad) * s.height;
       const x1 = s.width / 2 + Math.cos(rad) * s.width;

@@ -311,8 +311,10 @@ body {
 .studio-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 20rem;
+  grid-template-rows: minmax(0, 1fr);
   gap: 1.25rem;
   padding: 1rem 1.5rem 0;
+  height: calc(100vh - 3.5rem);
   min-height: calc(100vh - 3.5rem);
 }
 
@@ -321,14 +323,16 @@ body {
   align-items: center;
   justify-content: center;
   min-width: 0;
+  min-height: 0;
   background: var(--panel);
   border-radius: 1rem;
   overflow: hidden;
-  min-height: 16rem;
 }
 
 #preview-canvas {
   max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
   display: block;
 }
@@ -453,7 +457,8 @@ body {
 }
 
 .control-field select,
-.control-field input[type="number"] {
+.control-field input[type="number"],
+.control-field textarea {
   width: 100%;
   min-height: 2.45rem;
   padding: 0.5rem 0.65rem;
@@ -466,8 +471,13 @@ body {
 }
 
 .control-field select:focus,
-.control-field input[type="number"]:focus {
+.control-field input[type="number"]:focus,
+.control-field textarea:focus {
   border-color: var(--accent-b);
+}
+
+.control-field textarea {
+  resize: vertical;
 }
 
 .control-field input[type="range"],
@@ -609,8 +619,9 @@ body {
 
   .studio-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(10rem, 42vh) auto;
     padding: 0.75rem 1rem 0;
+    height: auto;
     min-height: auto;
   }
 
@@ -623,11 +634,13 @@ body {
 
   .preview-wrap {
     order: 1;
-    min-height: 10rem;
+    min-height: 0;
   }
 
   #preview-canvas {
     max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
   }
 }
@@ -640,5 +653,12 @@ body {
 
   .stop-row {
     grid-template-columns: 5.7rem minmax(0, 1fr) 1.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-bg,
+  .door:hover {
+    animation: none;
   }
 }

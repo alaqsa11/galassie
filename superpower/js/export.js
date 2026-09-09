@@ -16,7 +16,7 @@ window.AuraExport = {
 
   async copyLink(state) {
     const hash = AuraState.toHash(state);
-    const url = location.origin + location.pathname + '#' + hash;
+    const url = location.href.split('#')[0] + '#' + hash;
     history.replaceState(null, '', '#' + hash);
     await navigator.clipboard.writeText(url);
   }

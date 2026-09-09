@@ -51,10 +51,13 @@ window.AuraState = {
         { color: '#6d28d9', pos: 1 }
       ];
     }
-    s.stops = s.stops.slice(0, 5).map((st, i, arr) => ({
-      color: /^#[0-9a-fA-F]{6}$/.test(st.color) ? st.color : '#888888',
-      pos: Math.min(1, Math.max(0, Number(st.pos) ?? (i / (arr.length - 1))))
-    }));
+    s.stops = s.stops.slice(0, 5).map((st, i, arr) => {
+      const pos = Number(st.pos);
+      return {
+        color: /^#[0-9a-fA-F]{6}$/.test(st.color) ? st.color : '#888888',
+        pos: Math.min(1, Math.max(0, Number.isFinite(pos) ? pos : (i / (arr.length - 1))))
+      };
+    });
     s.overlays = s.overlays || { blobs: 2, intensity: 0.4, vignette: 0.3, layout: 0.5 };
     s.overlays.blobs = Math.min(6, Math.max(0, Math.round(Number(s.overlays.blobs) || 0)));
     s.overlays.intensity = Math.min(1, Math.max(0, Number(s.overlays.intensity) || 0));
