@@ -14,5 +14,10 @@ window.AuraUI = {
     t.classList.remove('hidden');
     clearTimeout(window.__auraToastTimer);
     window.__auraToastTimer = setTimeout(() => t.classList.add('hidden'), 2200);
+  },
+  renderPreview(state) {
+    const canvas = document.getElementById('preview-canvas');
+    if (!canvas || !window.AuraEngine) return;
+    AuraEngine.paint(canvas, state);
   }
 };

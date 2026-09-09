@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
         AuraUI.showView('inspiration');
         return;
       }
+      window.__auraState = AuraState.createDefault(cat);
       AuraUI.showView('studio');
+      AuraUI.renderPreview(window.__auraState);
     });
   });
   document.querySelectorAll('[data-nav="home"]').forEach((btn) => {
