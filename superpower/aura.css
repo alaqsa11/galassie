@@ -445,19 +445,51 @@ body {
   font-weight: 500;
 }
 
-.control-field > span {
+.control-field > span,
+.control-label-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
-.control-field output {
+.control-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
+.control-field input.control-number,
+.control-field .control-value input[type="number"],
+.stop-stroke .control-value input[type="number"] {
+  width: 3.4rem;
+  min-height: 1.55rem;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.4rem;
+  outline: none;
+  background: rgba(12, 10, 18, 0.78);
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.control-field .control-value input[type="number"]:focus,
+.stop-stroke .control-value input[type="number"]:focus {
+  border-color: var(--accent-b);
+}
+
+.control-unit {
+  color: rgba(247, 242, 255, 0.7);
+  font-size: 0.78rem;
+}
+
 .control-field select,
-.control-field input[type="number"],
+.control-field > input[type="number"],
+.control-field .dimensions-grid input[type="number"],
 .control-field textarea {
   width: 100%;
   min-height: 2.45rem;
@@ -471,7 +503,8 @@ body {
 }
 
 .control-field select:focus,
-.control-field input[type="number"]:focus,
+.control-field > input[type="number"]:focus,
+.control-field .dimensions-grid input[type="number"]:focus,
 .control-field textarea:focus {
   border-color: var(--accent-b);
 }
@@ -606,17 +639,14 @@ body {
   gap: 0.25rem;
 }
 
-.stop-stroke > span {
+.stop-stroke > span,
+.stop-stroke .control-label-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.4rem;
   color: rgba(247, 242, 255, 0.65);
   font-size: 0.65rem;
-}
-
-.stop-stroke output {
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
 }
 
 .remove-stop {
