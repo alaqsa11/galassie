@@ -74,18 +74,16 @@ window.AuraUI = {
       if (!row) return;
       const colorInput = row.querySelector('input[type="color"]');
       const colorLabel = row.querySelector('.color-control span');
-      const positionInput = row.querySelector('input[type="range"]');
-      const positionOutput = row.querySelector('output');
+      const strokeInput = row.querySelector('input[type="range"]');
+      const strokeOutput = row.querySelector('output');
       if (colorInput) colorInput.value = stop.color;
       if (colorLabel) colorLabel.textContent = stop.color.toUpperCase();
-      if (positionInput) positionInput.value = Math.round(stop.pos * 100);
-      if (positionOutput) positionOutput.value = Math.round(stop.pos * 100) + '%';
+      if (strokeInput) strokeInput.value = Math.round(stop.stroke * 100);
+      if (strokeOutput) strokeOutput.value = Math.round(stop.stroke * 100) + '%';
     };
     const paintGradientBar = () => {
       if (!gradientBar) return;
-      const barStops = current.stops
-        .slice()
-        .sort((a, b) => a.pos - b.pos)
+      const barStops = AuraEngine.resolveStopPoints(current.stops)
         .map((st) => st.color + ' ' + (st.pos * 100) + '%')
         .join(', ');
       gradientBar.style.backgroundImage = 'linear-gradient(90deg, ' + barStops + ')';
@@ -94,6 +92,8 @@ window.AuraUI = {
       current.stops.forEach((stop, index) => {
         handles[index].style.left = (stop.pos * 100) + '%';
         handles[index].style.backgroundColor = stop.color;
+        handles[index].style.opacity = String(0.45 + stop.stroke * 0.55);
+        handles[index].style.transform = 'translate(-50%, -50%) scale(' + (0.85 + stop.stroke * 0.45) + ')';
         handles[index].setAttribute(
           'aria-valuenow',
           String(Math.round(stop.pos * 100))
@@ -184,7 +184,7 @@ window.AuraUI = {
             if (!rect.width) return;
             const pos = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
             const stops = current.stops.map((item, i) => (
-              i === index ? { color: item.color, pos } : item
+              i === index ? { ...item, pos } : item
             ));
             emit({ ...current, stops });
             syncStopRow(index, current.stops[index]);
@@ -210,7 +210,7 @@ window.AuraUI = {
           event.preventDefault();
           const pos = Math.min(1, Math.max(0, current.stops[index].pos + delta));
           const stops = current.stops.map((item, i) => (
-            i === index ? { color: item.color, pos } : item
+            i === index ? { ...item, pos } : item
           ));
           emit({ ...current, stops });
           syncStopRow(index, current.stops[index]);
@@ -229,9 +229,9 @@ window.AuraUI = {
             <input type="color" value="${stop.color}">
             <span>${stop.color.toUpperCase()}</span>
           </label>
-          <label class="stop-position">
-            <span>Posizione <output>${Math.round(stop.pos * 100)}%</output></span>
-            <input type="range" min="0" max="100" step="1" value="${Math.round(stop.pos * 100)}" aria-label="Posizione colore ${index + 1}">
+          <label class="stop-stroke">
+            <span>Tratto <output>${Math.round(stop.stroke * 100)}%</output></span>
+            <input type="range" min="0" max="100" step="1" value="${Math.round(stop.stroke * 100)}" aria-label="Ampiezza e intensita tratto colore ${index + 1}">
           </label>
           <button type="button" class="remove-stop" aria-label="Rimuovi colore ${index + 1}" ${current.stops.length <= 2 ? 'disabled' : ''}>
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -239,22 +239,22 @@ window.AuraUI = {
         `;
         const colorInput = row.querySelector('input[type="color"]');
         const colorLabel = row.querySelector('.color-control span');
-        const positionInput = row.querySelector('input[type="range"]');
-        const positionOutput = row.querySelector('output');
+        const strokeInput = row.querySelector('input[type="range"]');
+        const strokeOutput = row.querySelector('output');
         const removeButton = row.querySelector('.remove-stop');
         listen(colorInput, 'input', () => {
           const stops = current.stops.map((item, i) => i === index
-            ? { color: colorInput.value, pos: item.pos }
+            ? { ...item, color: colorInput.value }
             : item);
           colorLabel.textContent = colorInput.value.toUpperCase();
           emit({ ...current, stops });
         });
-        listen(positionInput, 'input', () => {
-          const pos = Number(positionInput.value) / 100;
+        listen(strokeInput, 'input', () => {
+          const stroke = Number(strokeInput.value) / 100;
           const stops = current.stops.map((item, i) => i === index
-            ? { color: item.color, pos }
+            ? { ...item, stroke }
             : item);
-          positionOutput.value = positionInput.value + '%';
+          strokeOutput.value = strokeInput.value + '%';
           emit({ ...current, stops });
         });
         listen(removeButton, 'click', () => {
@@ -360,7 +360,8 @@ window.AuraUI = {
       const after = current.stops[gapIndex + 1];
       const stop = {
         color: before.color,
-        pos: (before.pos + after.pos) / 2
+        pos: (before.pos + after.pos) / 2,
+        stroke: 0.3
       };
       const stops = current.stops.slice();
       stops.splice(gapIndex + 1, 0, stop);

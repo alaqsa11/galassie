@@ -10,7 +10,8 @@ window.AuraEngine = {
       const light = 35 + Math.random() * 35;
       s.stops.push({
         color: this._hslToHex(h, sat, light),
-        pos: i / (n - 1)
+        pos: i / (n - 1),
+        stroke: 0.15 + Math.random() * 0.55
       });
     }
     const types = ['linear', 'radial', 'conic'];
@@ -27,8 +28,7 @@ window.AuraEngine = {
 
   cssGradient(state) {
     const s = AuraState.clamp(state);
-    const stops = s.stops.slice()
-      .sort((a, b) => a.pos - b.pos)
+    const stops = this.resolveStopPoints(s.stops)
       .map((st) => st.color + ' ' + (st.pos * 100) + '%')
       .join(', ');
     if (s.gradientType === 'radial') {
@@ -38,6 +38,32 @@ window.AuraEngine = {
       return `conic-gradient(from ${s.angle}deg at ${s.cx * 100}% ${s.cy * 100}%, ${stops})`;
     }
     return `linear-gradient(${s.angle}deg, ${stops})`;
+  },
+
+  resolveStopPoints(stops) {
+    const points = [];
+    (stops || []).forEach((st) => {
+      const stroke = Math.min(1, Math.max(0, Number(st.stroke) || 0));
+      const half = stroke * 0.28;
+      if (half < 0.004) {
+        points.push({ color: st.color, pos: st.pos });
+        return;
+      }
+      const left = Math.max(0, st.pos - half);
+      const right = Math.min(1, st.pos + half);
+      points.push({ color: st.color, pos: left });
+      if (right - left > 0.001) points.push({ color: st.color, pos: right });
+    });
+    points.sort((a, b) => a.pos - b.pos);
+    const unique = [];
+    let last = -1;
+    points.forEach((point) => {
+      let pos = point.pos;
+      if (pos <= last) pos = Math.min(1, last + 0.0001);
+      last = pos;
+      unique.push({ color: point.color, pos });
+    });
+    return unique;
   },
 
   paint(canvas, state) {
@@ -53,7 +79,7 @@ window.AuraEngine = {
   },
 
   _makeCanvasGradient(ctx, s) {
-    const sorted = s.stops.slice().sort((a, b) => a.pos - b.pos);
+    const sorted = this.resolveStopPoints(s.stops);
     let g;
     if (s.gradientType === 'radial') {
       const r = Math.hypot(s.width, s.height) * 0.6;

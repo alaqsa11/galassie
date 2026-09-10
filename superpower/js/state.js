@@ -12,9 +12,9 @@ window.AuraState = {
       cx: 0.5,
       cy: 0.5,
       stops: [
-        { color: '#312e81', pos: 0 },
-        { color: '#db2777', pos: 0.5 },
-        { color: '#f59e0b', pos: 1 }
+        { color: '#312e81', pos: 0, stroke: 0.2 },
+        { color: '#db2777', pos: 0.5, stroke: 0.35 },
+        { color: '#f59e0b', pos: 1, stroke: 0.2 }
       ],
       overlays: { blobs: 3, intensity: 0.45, vignette: 0.3, layout: 0.35 },
       text: category === 'social'
@@ -47,15 +47,17 @@ window.AuraState = {
     if (!['linear', 'radial', 'conic'].includes(s.gradientType)) s.gradientType = 'linear';
     if (!Array.isArray(s.stops) || s.stops.length < 2) {
       s.stops = [
-        { color: '#111827', pos: 0 },
-        { color: '#6d28d9', pos: 1 }
+        { color: '#111827', pos: 0, stroke: 0.2 },
+        { color: '#6d28d9', pos: 1, stroke: 0.2 }
       ];
     }
     s.stops = s.stops.slice(0, 5).map((st, i, arr) => {
       const pos = Number(st.pos);
+      const stroke = Number(st.stroke);
       return {
         color: /^#[0-9a-fA-F]{6}$/.test(st.color) ? st.color : '#888888',
-        pos: Math.min(1, Math.max(0, Number.isFinite(pos) ? pos : (i / (arr.length - 1))))
+        pos: Math.min(1, Math.max(0, Number.isFinite(pos) ? pos : (i / (arr.length - 1)))),
+        stroke: Math.min(1, Math.max(0, Number.isFinite(stroke) ? stroke : 0.25))
       };
     });
     s.overlays = s.overlays || { blobs: 2, intensity: 0.4, vignette: 0.3, layout: 0.5 };

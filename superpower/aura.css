@@ -481,7 +481,7 @@ body {
 }
 
 .control-field input[type="range"],
-.stop-position input {
+.stop-stroke input {
   width: 100%;
   margin: 0;
   accent-color: var(--accent-a);
@@ -553,7 +553,6 @@ body {
 .gradient-stop-handle:active {
   cursor: grabbing;
   z-index: 2;
-  transform: translate(-50%, -50%) scale(1.12);
 }
 
 .stops-list {
@@ -602,12 +601,12 @@ body {
   border-radius: 50%;
 }
 
-.stop-position {
+.stop-stroke {
   display: grid;
   gap: 0.25rem;
 }
 
-.stop-position > span {
+.stop-stroke > span {
   display: flex;
   justify-content: space-between;
   gap: 0.4rem;
@@ -615,7 +614,7 @@ body {
   font-size: 0.65rem;
 }
 
-.stop-position output {
+.stop-stroke output {
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
