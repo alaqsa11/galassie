@@ -72,16 +72,34 @@
               </select>
             </label>
             <label class="control-field">
-              <span>Angolo <output id="ctrl-angle-value">135°</output></span>
+              <span class="control-label-row">
+                Angolo
+                <span class="control-value">
+                  <input id="ctrl-angle-value" type="number" min="0" max="360" step="1" value="135" aria-label="Angolo gradi">
+                  <span class="control-unit" aria-hidden="true">°</span>
+                </span>
+              </span>
               <input id="ctrl-angle" type="range" min="0" max="360" step="1" value="135">
             </label>
             <div id="center-controls" class="center-controls hidden">
               <label class="control-field">
-                <span>Centro X <output id="ctrl-cx-value">50%</output></span>
+                <span class="control-label-row">
+                  Centro X
+                  <span class="control-value">
+                    <input id="ctrl-cx-value" type="number" min="0" max="100" step="1" value="50" aria-label="Centro X percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
                 <input id="ctrl-cx" type="range" min="0" max="100" step="1" value="50">
               </label>
               <label class="control-field">
-                <span>Centro Y <output id="ctrl-cy-value">50%</output></span>
+                <span class="control-label-row">
+                  Centro Y
+                  <span class="control-value">
+                    <input id="ctrl-cy-value" type="number" min="0" max="100" step="1" value="50" aria-label="Centro Y percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
                 <input id="ctrl-cy" type="range" min="0" max="100" step="1" value="50">
               </label>
             </div>
@@ -108,19 +126,42 @@
           <section class="control-section" aria-labelledby="overlay-controls-title">
             <h3 id="overlay-controls-title">Overlay</h3>
             <label class="control-field">
-              <span>Forme <output id="ctrl-blobs-value">3</output></span>
+              <span class="control-label-row">
+                Forme
+                <span class="control-value">
+                  <input id="ctrl-blobs-value" type="number" min="0" max="6" step="1" value="3" aria-label="Forme">
+                </span>
+              </span>
               <input id="ctrl-blobs" type="range" min="0" max="6" step="1" value="3">
             </label>
             <label class="control-field">
-              <span>Intensita <output id="ctrl-intensity-value">45%</output></span>
+              <span class="control-label-row">
+                Intensita
+                <span class="control-value">
+                  <input id="ctrl-intensity-value" type="number" min="0" max="100" step="1" value="45" aria-label="Intensita percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
               <input id="ctrl-intensity" type="range" min="0" max="100" step="1" value="45">
             </label>
             <label class="control-field">
-              <span>Vignettatura <output id="ctrl-vignette-value">30%</output></span>
+              <span class="control-label-row">
+                Vignettatura
+                <span class="control-value">
+                  <input id="ctrl-vignette-value" type="number" min="0" max="100" step="1" value="30" aria-label="Vignettatura percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
               <input id="ctrl-vignette" type="range" min="0" max="100" step="1" value="30">
             </label>
             <label class="control-field">
-              <span>Disposizione <output id="ctrl-layout-value">35%</output></span>
+              <span class="control-label-row">
+                Disposizione
+                <span class="control-value">
+                  <input id="ctrl-layout-value" type="number" min="0" max="100" step="1" value="35" aria-label="Disposizione percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
               <input id="ctrl-layout" type="range" min="0" max="100" step="1" value="35">
             </label>
           </section>
@@ -151,11 +192,23 @@
             </label>
             <div class="center-controls">
               <label class="control-field">
-                <span>Posizione X <output id="ctrl-text-x-value">50%</output></span>
+                <span class="control-label-row">
+                  Posizione X
+                  <span class="control-value">
+                    <input id="ctrl-text-x-value" type="number" min="0" max="100" step="1" value="50" aria-label="Posizione X percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
                 <input id="ctrl-text-x" type="range" min="0" max="100" step="1" value="50">
               </label>
               <label class="control-field">
-                <span>Posizione Y <output id="ctrl-text-y-value">50%</output></span>
+                <span class="control-label-row">
+                  Posizione Y
+                  <span class="control-value">
+                    <input id="ctrl-text-y-value" type="number" min="0" max="100" step="1" value="50" aria-label="Posizione Y percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
                 <input id="ctrl-text-y" type="range" min="0" max="100" step="1" value="50">
               </label>
             </div>
