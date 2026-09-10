@@ -66,8 +66,38 @@ window.AuraUI = {
     const gradientBar = document.getElementById('gradient-stop-bar');
     const formats = AuraPresets.formats[current.category === 'social' ? 'social' : 'sfondi'];
 
-    const setOutput = (id, value) => {
-      document.getElementById(id).value = value;
+    const setNumeric = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = String(value);
+    };
+    const commitLinkedNumber = (numberEl, min, max, apply) => {
+      const raw = numberEl.value.trim();
+      const parsed = Number(raw);
+      if (raw === '' || !Number.isFinite(parsed)) {
+        return false;
+      }
+      const clamped = Math.min(max, Math.max(min, Math.round(parsed)));
+      numberEl.value = String(clamped);
+      apply(clamped);
+      return true;
+    };
+    const bindLinkedNumber = ({ rangeEl, numberEl, min, max, onRange, onCommit }) => {
+      listen(rangeEl, 'input', () => {
+        numberEl.value = rangeEl.value;
+        onRange(Number(rangeEl.value));
+      });
+      const finish = () => {
+        if (!commitLinkedNumber(numberEl, min, max, onCommit)) {
+          numberEl.value = rangeEl.value;
+        }
+      };
+      listen(numberEl, 'blur', finish);
+      listen(numberEl, 'keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        numberEl.blur();
+      });
     };
     const syncStopRow = (index, stop) => {
       const row = stopsList.children[index];
@@ -75,11 +105,11 @@ window.AuraUI = {
       const colorInput = row.querySelector('input[type="color"]');
       const colorLabel = row.querySelector('.color-control span');
       const strokeInput = row.querySelector('input[type="range"]');
-      const strokeOutput = row.querySelector('output');
+      const strokeNumber = row.querySelector('.stop-stroke-value');
       if (colorInput) colorInput.value = stop.color;
       if (colorLabel) colorLabel.textContent = stop.color.toUpperCase();
       if (strokeInput) strokeInput.value = Math.round(stop.stroke * 100);
-      if (strokeOutput) strokeOutput.value = Math.round(stop.stroke * 100) + '%';
+      if (strokeNumber) strokeNumber.value = String(Math.round(stop.stroke * 100));
     };
     const paintGradientBar = () => {
       if (!gradientBar) return;
@@ -118,9 +148,9 @@ window.AuraUI = {
       angle.value = current.angle;
       cx.value = Math.round(current.cx * 100);
       cy.value = Math.round(current.cy * 100);
-      setOutput('ctrl-angle-value', Math.round(current.angle) + '°');
-      setOutput('ctrl-cx-value', Math.round(current.cx * 100) + '%');
-      setOutput('ctrl-cy-value', Math.round(current.cy * 100) + '%');
+      setNumeric('ctrl-angle-value', Math.round(current.angle));
+      setNumeric('ctrl-cx-value', Math.round(current.cx * 100));
+      setNumeric('ctrl-cy-value', Math.round(current.cy * 100));
       centerControls.classList.toggle('hidden', current.gradientType === 'linear');
     };
     const syncOverlays = () => {
@@ -128,10 +158,10 @@ window.AuraUI = {
       intensity.value = Math.round(current.overlays.intensity * 100);
       vignette.value = Math.round(current.overlays.vignette * 100);
       layout.value = Math.round(current.overlays.layout * 100);
-      setOutput('ctrl-blobs-value', current.overlays.blobs);
-      setOutput('ctrl-intensity-value', Math.round(current.overlays.intensity * 100) + '%');
-      setOutput('ctrl-vignette-value', Math.round(current.overlays.vignette * 100) + '%');
-      setOutput('ctrl-layout-value', Math.round(current.overlays.layout * 100) + '%');
+      setNumeric('ctrl-blobs-value', current.overlays.blobs);
+      setNumeric('ctrl-intensity-value', Math.round(current.overlays.intensity * 100));
+      setNumeric('ctrl-vignette-value', Math.round(current.overlays.vignette * 100));
+      setNumeric('ctrl-layout-value', Math.round(current.overlays.layout * 100));
     };
     const syncFormat = () => {
       const match = matchingFormat();
@@ -151,8 +181,8 @@ window.AuraUI = {
       textWeight.value = String(current.text.weight);
       textAlign.value = current.text.align;
       textColor.value = current.text.color;
-      setOutput('ctrl-text-x-value', Math.round(current.text.x * 100) + '%');
-      setOutput('ctrl-text-y-value', Math.round(current.text.y * 100) + '%');
+      setNumeric('ctrl-text-x-value', Math.round(current.text.x * 100));
+      setNumeric('ctrl-text-y-value', Math.round(current.text.y * 100));
     };
     const updateText = (patch) => {
       if (current.category !== 'social' || !current.text) return;
@@ -230,7 +260,13 @@ window.AuraUI = {
             <span>${stop.color.toUpperCase()}</span>
           </label>
           <label class="stop-stroke">
-            <span>Tratto <output>${Math.round(stop.stroke * 100)}%</output></span>
+            <span class="control-label-row">
+              Tratto
+              <span class="control-value">
+                <input type="number" class="stop-stroke-value" min="0" max="100" step="1" value="${Math.round(stop.stroke * 100)}" aria-label="Tratto colore ${index + 1}">
+                <span class="control-unit" aria-hidden="true">%</span>
+              </span>
+            </span>
             <input type="range" min="0" max="100" step="1" value="${Math.round(stop.stroke * 100)}" aria-label="Ampiezza e intensita tratto colore ${index + 1}">
           </label>
           <button type="button" class="remove-stop" aria-label="Rimuovi colore ${index + 1}" ${current.stops.length <= 2 ? 'disabled' : ''}>
@@ -240,7 +276,7 @@ window.AuraUI = {
         const colorInput = row.querySelector('input[type="color"]');
         const colorLabel = row.querySelector('.color-control span');
         const strokeInput = row.querySelector('input[type="range"]');
-        const strokeOutput = row.querySelector('output');
+        const strokeNumber = row.querySelector('.stop-stroke-value');
         const removeButton = row.querySelector('.remove-stop');
         listen(colorInput, 'input', () => {
           const stops = current.stops.map((item, i) => i === index
@@ -251,11 +287,32 @@ window.AuraUI = {
         });
         listen(strokeInput, 'input', () => {
           const stroke = Number(strokeInput.value) / 100;
+          strokeNumber.value = strokeInput.value;
           const stops = current.stops.map((item, i) => i === index
             ? { ...item, stroke }
             : item);
-          strokeOutput.value = strokeInput.value + '%';
           emit({ ...current, stops });
+        });
+        const finishStroke = () => {
+          const raw = strokeNumber.value.trim();
+          const parsed = Number(raw);
+          if (raw === '' || !Number.isFinite(parsed)) {
+            strokeNumber.value = strokeInput.value;
+            return;
+          }
+          const clamped = Math.min(100, Math.max(0, Math.round(parsed)));
+          strokeNumber.value = String(clamped);
+          strokeInput.value = String(clamped);
+          const stops = current.stops.map((item, i) => i === index
+            ? { ...item, stroke: clamped / 100 }
+            : item);
+          emit({ ...current, stops });
+        };
+        listen(strokeNumber, 'blur', finishStroke);
+        listen(strokeNumber, 'keydown', (event) => {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          strokeNumber.blur();
         });
         listen(removeButton, 'click', () => {
           if (current.stops.length <= 2) return;
@@ -321,28 +378,63 @@ window.AuraUI = {
       emit({ ...current, gradientType: type.value });
       syncGradient();
     });
-    listen(angle, 'input', () => {
-      setOutput('ctrl-angle-value', angle.value + '°');
-      emit({ ...current, angle: Number(angle.value) });
+    bindLinkedNumber({
+      rangeEl: angle,
+      numberEl: document.getElementById('ctrl-angle-value'),
+      min: 0,
+      max: 360,
+      onRange: (v) => emit({ ...current, angle: v }),
+      onCommit: (v) => {
+        angle.value = String(v);
+        emit({ ...current, angle: v });
+      }
     });
-    [cx, cy].forEach((input) => {
-      listen(input, 'input', () => {
-        setOutput('ctrl-' + input.id.slice(5) + '-value', input.value + '%');
-        emit({ ...current, [input.id.slice(5)]: Number(input.value) / 100 });
-      });
+    bindLinkedNumber({
+      rangeEl: cx,
+      numberEl: document.getElementById('ctrl-cx-value'),
+      min: 0,
+      max: 100,
+      onRange: (v) => emit({ ...current, cx: v / 100 }),
+      onCommit: (v) => {
+        cx.value = String(v);
+        emit({ ...current, cx: v / 100 });
+      }
+    });
+    bindLinkedNumber({
+      rangeEl: cy,
+      numberEl: document.getElementById('ctrl-cy-value'),
+      min: 0,
+      max: 100,
+      onRange: (v) => emit({ ...current, cy: v / 100 }),
+      onCommit: (v) => {
+        cy.value = String(v);
+        emit({ ...current, cy: v / 100 });
+      }
     });
     [
-      [blobs, 'blobs', 1, 'ctrl-blobs-value'],
-      [intensity, 'intensity', 0.01, 'ctrl-intensity-value'],
-      [vignette, 'vignette', 0.01, 'ctrl-vignette-value'],
-      [layout, 'layout', 0.01, 'ctrl-layout-value']
-    ].forEach(([input, key, factor, outputId]) => {
-      listen(input, 'input', () => {
-        setOutput(outputId, key === 'blobs' ? input.value : input.value + '%');
-        emit({
-          ...current,
-          overlays: { ...current.overlays, [key]: Number(input.value) * factor }
-        });
+      [blobs, 'blobs', 1, 'ctrl-blobs-value', 0, 6],
+      [intensity, 'intensity', 0.01, 'ctrl-intensity-value', 0, 100],
+      [vignette, 'vignette', 0.01, 'ctrl-vignette-value', 0, 100],
+      [layout, 'layout', 0.01, 'ctrl-layout-value', 0, 100]
+    ].forEach(([input, key, factor, numberId, min, max]) => {
+      bindLinkedNumber({
+        rangeEl: input,
+        numberEl: document.getElementById(numberId),
+        min,
+        max,
+        onRange: (v) => {
+          emit({
+            ...current,
+            overlays: { ...current.overlays, [key]: v * factor }
+          });
+        },
+        onCommit: (v) => {
+          input.value = String(v);
+          emit({
+            ...current,
+            overlays: { ...current.overlays, [key]: v * factor }
+          });
+        }
       });
     });
     listen(addStop, 'click', () => {
@@ -397,13 +489,27 @@ window.AuraUI = {
     listen(height, 'change', updateDimensions);
 
     listen(textContent, 'input', () => updateText({ content: textContent.value }));
-    listen(textX, 'input', () => {
-      setOutput('ctrl-text-x-value', textX.value + '%');
-      updateText({ x: Number(textX.value) / 100 });
+    bindLinkedNumber({
+      rangeEl: textX,
+      numberEl: document.getElementById('ctrl-text-x-value'),
+      min: 0,
+      max: 100,
+      onRange: (v) => updateText({ x: v / 100 }),
+      onCommit: (v) => {
+        textX.value = String(v);
+        updateText({ x: v / 100 });
+      }
     });
-    listen(textY, 'input', () => {
-      setOutput('ctrl-text-y-value', textY.value + '%');
-      updateText({ y: Number(textY.value) / 100 });
+    bindLinkedNumber({
+      rangeEl: textY,
+      numberEl: document.getElementById('ctrl-text-y-value'),
+      min: 0,
+      max: 100,
+      onRange: (v) => updateText({ y: v / 100 }),
+      onCommit: (v) => {
+        textY.value = String(v);
+        updateText({ y: v / 100 });
+      }
     });
     listen(textSize, 'change', () => {
       const size = Math.min(200, Math.max(12, Number(textSize.value) || 64));
