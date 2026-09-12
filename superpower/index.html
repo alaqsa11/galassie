@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura — Grafiche a gradienti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="aura.css">
+</head>
+<body>
+  <div id="app" data-view="home">
+    <section id="view-home" class="view view-home">
+      <div class="home-bg" aria-hidden="true"></div>
+      <header class="home-hero">
+        <p class="brand">Aura</p>
+        <h1>Grafiche a gradienti, in un click</h1>
+        <p class="tagline">Sfondi, social e ispirazioni — genera, ritocca, scarica.</p>
+      </header>
+      <div class="category-doors">
+        <button type="button" class="door" data-category="sfondi">
+          <i class="fa-solid fa-panorama"></i>
+          <span>Sfondi</span>
+          <small>Wallpaper e sfondi full-bleed</small>
+        </button>
+        <button type="button" class="door" data-category="social">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>Social</span>
+          <small>Post e storie con testo</small>
+        </button>
+        <button type="button" class="door" data-category="ispirazione">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Ispirazione</span>
+          <small>Mood e palette da esplorare</small>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-inspiration" class="view view-inspiration hidden" hidden>
+      <button type="button" class="back-btn" data-nav="home">Indietro</button>
+      <h2>Ispirazione</h2>
+      <div id="inspiration-grid" class="inspiration-grid"></div>
+    </section>
+
+    <section id="view-studio" class="view view-studio hidden" hidden>
+      <button type="button" class="back-btn" data-nav="home">Indietro</button>
+      <div class="studio-layout">
+        <div class="preview-wrap">
+          <canvas id="preview-canvas" width="1280" height="720"></canvas>
+        </div>
+        <aside id="controls-panel" class="controls-panel">
+          <div class="controls-heading">
+            <div>
+              <p class="controls-kicker">Studio Aura</p>
+              <h2>Personalizza</h2>
+            </div>
+            <button type="button" id="btn-generate" class="generate-btn">
+              <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+              <span>Genera</span>
+            </button>
+          </div>
+
+          <section class="control-section" aria-labelledby="gradient-controls-title">
+            <h3 id="gradient-controls-title">Gradiente</h3>
+            <label class="control-field">
+              <span>Tipo</span>
+              <select id="ctrl-type">
+                <option value="linear">Lineare</option>
+                <option value="radial">Radiale</option>
+                <option value="conic">Conico</option>
+              </select>
+            </label>
+            <label class="control-field">
+              <span class="control-label-row">
+                Angolo
+                <span class="control-value">
+                  <input id="ctrl-angle-value" type="number" min="0" max="360" step="1" value="135" aria-label="Angolo gradi">
+                  <span class="control-unit" aria-hidden="true">°</span>
+                </span>
+              </span>
+              <input id="ctrl-angle" type="range" min="0" max="360" step="1" value="135">
+            </label>
+            <div id="center-controls" class="center-controls hidden">
+              <label class="control-field">
+                <span class="control-label-row">
+                  Centro X
+                  <span class="control-value">
+                    <input id="ctrl-cx-value" type="number" min="0" max="100" step="1" value="50" aria-label="Centro X percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
+                <input id="ctrl-cx" type="range" min="0" max="100" step="1" value="50">
+              </label>
+              <label class="control-field">
+                <span class="control-label-row">
+                  Centro Y
+                  <span class="control-value">
+                    <input id="ctrl-cy-value" type="number" min="0" max="100" step="1" value="50" aria-label="Centro Y percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
+                <input id="ctrl-cy" type="range" min="0" max="100" step="1" value="50">
+              </label>
+            </div>
+          </section>
+
+          <section class="control-section" aria-labelledby="colors-controls-title">
+            <div class="section-heading">
+              <h3 id="colors-controls-title">Colori</h3>
+              <button type="button" id="btn-add-stop" class="small-btn">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Aggiungi
+              </button>
+            </div>
+            <p class="colors-hint">Trascina i punti sulla barra per la posizione. Lo slider Tratto regola ampiezza e intensita del colore nel gradiente.</p>
+            <div
+              id="gradient-stop-bar"
+              class="gradient-stop-bar"
+              role="group"
+              aria-label="Posizioni colori del gradiente"
+            ></div>
+            <div id="stops-list" class="stops-list"></div>
+          </section>
+
+          <section class="control-section" aria-labelledby="overlay-controls-title">
+            <h3 id="overlay-controls-title">Overlay</h3>
+            <label class="control-field">
+              <span class="control-label-row">
+                Forme
+                <span class="control-value">
+                  <input id="ctrl-blobs-value" type="number" min="0" max="6" step="1" value="3" aria-label="Forme">
+                </span>
+              </span>
+              <input id="ctrl-blobs" type="range" min="0" max="6" step="1" value="3">
+            </label>
+            <label class="control-field">
+              <span class="control-label-row">
+                Intensita
+                <span class="control-value">
+                  <input id="ctrl-intensity-value" type="number" min="0" max="100" step="1" value="45" aria-label="Intensita percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
+              <input id="ctrl-intensity" type="range" min="0" max="100" step="1" value="45">
+            </label>
+            <label class="control-field">
+              <span class="control-label-row">
+                Vignettatura
+                <span class="control-value">
+                  <input id="ctrl-vignette-value" type="number" min="0" max="100" step="1" value="30" aria-label="Vignettatura percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
+              <input id="ctrl-vignette" type="range" min="0" max="100" step="1" value="30">
+            </label>
+            <label class="control-field">
+              <span class="control-label-row">
+                Disposizione
+                <span class="control-value">
+                  <input id="ctrl-layout-value" type="number" min="0" max="100" step="1" value="35" aria-label="Disposizione percentuale">
+                  <span class="control-unit" aria-hidden="true">%</span>
+                </span>
+              </span>
+              <input id="ctrl-layout" type="range" min="0" max="100" step="1" value="35">
+            </label>
+          </section>
+
+          <section class="control-section" aria-labelledby="format-controls-title">
+            <h3 id="format-controls-title">Formato</h3>
+            <label class="control-field">
+              <span>Preset</span>
+              <select id="ctrl-format"></select>
+            </label>
+            <div class="dimensions-grid">
+              <label class="control-field">
+                <span>Larghezza</span>
+                <input id="ctrl-width" type="number" min="64" max="4096" step="1">
+              </label>
+              <label class="control-field">
+                <span>Altezza</span>
+                <input id="ctrl-height" type="number" min="64" max="4096" step="1">
+              </label>
+            </div>
+          </section>
+
+          <section id="text-controls" class="control-section hidden" hidden aria-labelledby="text-controls-title">
+            <h3 id="text-controls-title">Testo</h3>
+            <label class="control-field">
+              <span>Contenuto</span>
+              <textarea id="ctrl-text-content" rows="3" placeholder="Il tuo messaggio"></textarea>
+            </label>
+            <div class="center-controls">
+              <label class="control-field">
+                <span class="control-label-row">
+                  Posizione X
+                  <span class="control-value">
+                    <input id="ctrl-text-x-value" type="number" min="0" max="100" step="1" value="50" aria-label="Posizione X percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
+                <input id="ctrl-text-x" type="range" min="0" max="100" step="1" value="50">
+              </label>
+              <label class="control-field">
+                <span class="control-label-row">
+                  Posizione Y
+                  <span class="control-value">
+                    <input id="ctrl-text-y-value" type="number" min="0" max="100" step="1" value="50" aria-label="Posizione Y percentuale">
+                    <span class="control-unit" aria-hidden="true">%</span>
+                  </span>
+                </span>
+                <input id="ctrl-text-y" type="range" min="0" max="100" step="1" value="50">
+              </label>
+            </div>
+            <label class="control-field">
+              <span>Dimensione (px)</span>
+              <input id="ctrl-text-size" type="number" min="12" max="200" step="1" value="64">
+            </label>
+            <label class="control-field">
+              <span>Peso</span>
+              <select id="ctrl-text-weight">
+                <option value="400">Regular (400)</option>
+                <option value="600">Semibold (600)</option>
+                <option value="700" selected>Bold (700)</option>
+                <option value="800">Extra bold (800)</option>
+              </select>
+            </label>
+            <label class="control-field">
+              <span>Allineamento</span>
+              <select id="ctrl-text-align">
+                <option value="left">Sinistra</option>
+                <option value="center" selected>Centro</option>
+                <option value="right">Destra</option>
+              </select>
+            </label>
+            <label class="control-field color-control">
+              <span>Colore</span>
+              <input id="ctrl-text-color" type="color" value="#ffffff">
+            </label>
+          </section>
+
+          <section class="control-section" aria-labelledby="export-controls-title">
+            <h3 id="export-controls-title">Esporta e condividi</h3>
+            <div class="inspiration-actions">
+              <button type="button" id="btn-download" class="inspiration-btn inspiration-btn-primary">
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                Scarica PNG
+              </button>
+              <button type="button" id="btn-copy-palette" class="inspiration-btn">
+                <i class="fa-solid fa-palette" aria-hidden="true"></i>
+                Copia palette
+              </button>
+              <button type="button" id="btn-copy-link" class="inspiration-btn">
+                <i class="fa-solid fa-link" aria-hidden="true"></i>
+                Copia link
+              </button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="js/presets.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/gradient-engine.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
